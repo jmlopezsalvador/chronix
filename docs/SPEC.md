@@ -36,7 +36,7 @@ centésimas** de las vueltas y de la parada a valores preparados de antemano.
 - R14. La arquitectura debe separar la **lógica** del cronómetro de la **presentación**, para añadir temas sin tocar la lógica.
 
 ## 5. Ajustes secretos
-- R15. Acceso: **pulsación larga en la esquina superior derecha** (zona invisible). Duración por defecto **1,5 s**, configurable.
+- R15. Acceso: **pulsación larga en la esquina superior derecha** (zona invisible). Duración por defecto **1,5 s**, configurable. La zona mide 120 dp de ancho y llega desde el borde superior de la pantalla hasta 120 dp por debajo de la barra de estado; es igual en todos los diseños y funciona con el cronómetro parado, en marcha o en pausa. (En Android la propia barra de estado no entrega toques a la app.)
 - R16. Contenido (fase 1; las cajas de centésimas son de texto numérico normal, se pueden borrar y el teclado se cierra al tocar fuera):
   - Elegir el look and feel.
   - Duración de la pulsación larga de acceso.

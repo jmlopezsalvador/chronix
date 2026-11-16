@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -62,11 +63,16 @@ fun TickEffect(state: StopwatchState) {
     }
 }
 
-/** Zona invisible en la esquina superior derecha: pulsación larga → ajustes secretos. */
+/**
+ * Zona invisible en la esquina superior derecha: pulsación larga → ajustes secretos.
+ * Empieza en el borde superior de la pantalla (cubre también la altura de la barra de estado, donde la gente
+ * suele pulsar «la esquina») y baja 120 dp por debajo de ella; 120 dp de ancho.
+ */
 @Composable
 fun SecretCorner(p: StopwatchScreenParams, modifier: Modifier = Modifier) {
+    val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     Box(
-        modifier.windowInsetsPadding(WindowInsets.statusBars).size(96.dp)
+        modifier.width(120.dp).height(top + 120.dp)
             .pressAndHold(p.secretHoldMs, onHold = p.onSecret),
     )
 }
