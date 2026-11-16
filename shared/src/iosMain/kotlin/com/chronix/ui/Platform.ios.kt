@@ -11,7 +11,7 @@ import platform.UIKit.UIImpactFeedbackStyle
 
 /** iOS: sin comportamiento especial (la barra de estado y el indicador de inicio se ocultan en ContentView.swift). */
 @Composable
-actual fun SystemBarsEffect() {}
+actual fun SystemBarsEffect(darkBackground: Boolean) {}
 
 @Composable
 actual fun rememberVibrate(): () -> Unit = remember {

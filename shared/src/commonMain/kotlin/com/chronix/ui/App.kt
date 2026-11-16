@@ -17,7 +17,8 @@ fun ChronixRoot(store: SettingsStore) {
     var inSettings by remember { mutableStateOf(false) }
     val stopwatch = remember { StopwatchState() }
     val vibrate = rememberVibrate()
-    SystemBarsEffect()
+    val theme = ClockThemes.byId(settings.themeId)
+    SystemBarsEffect(darkBackground = theme.dark && !inSettings)
 
     MaterialTheme {
         if (inSettings) {
@@ -29,7 +30,7 @@ fun ChronixRoot(store: SettingsStore) {
         } else {
             StopwatchScreen(
                 state = stopwatch,
-                theme = ClockThemes.byId(settings.themeId),
+                theme = theme,
                 secretHoldMs = settings.secretHoldMs,
                 onSecret = { inSettings = true },
                 onArmForcing = {

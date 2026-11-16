@@ -90,14 +90,14 @@ class Stopwatch {
     }
 }
 
-/** `MM:SS,cc`, o `H:MM:SS,cc` a partir de la hora. */
-fun formatCs(cs: Long): String {
+/** `MM:SS,cc`, o `H:MM:SS,cc` a partir de la hora. `decimal` es el separador de las centésimas. */
+fun formatCs(cs: Long, decimal: String = ","): String {
     val c = (cs % 100).toInt()
     val totalSec = cs / 100
     val s = (totalSec % 60).toInt()
     val m = ((totalSec / 60) % 60).toInt()
     val h = totalSec / 3600
-    val core = "${two(m)}:${two(s)},${two(c)}"
+    val core = "${two(m)}:${two(s)}$decimal${two(c)}"
     return if (h > 0) "$h:$core" else core
 }
 

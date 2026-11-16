@@ -1,0 +1,11 @@
+CATÁLOGO DE CRONÓMETROS MÓVILES
+
+Abrir index.html para navegar sin conexión.
+Cada carpeta contiene Ficha.md editable y capturas originales de referencia en PNG o JPG.
+Fuentes_capturas.csv documenta cada imagen. datos_catalogo.json permite reutilizar el contenido.
+
+La unidad de comparación es marca + aplicación + versión, porque varios modelos comparten interfaz. Las imágenes proceden de guías y publicaciones enlazadas; no son capturas tomadas en dispositivos propios. Los modelos citados son contexto de la familia, no identificación del teléfono capturado. Las etiquetas originales se conservan, principalmente en alemán e inglés.
+
+Este es un catálogo de referencias verificables de distintas generaciones, no una auditoría de todas las versiones vigentes en 2026. No se ha verificado el comportamiento en dispositivos físicos, tamaños táctiles, accesibilidad, animaciones, bloqueo, notificaciones o persistencia tras reiniciar. Las centésimas visibles no acreditan precisión metrológica. Se estudia Cronómetro; alarma, reloj mundial y temporizador solo se muestran como acceso o contexto.
+
+Algunas secuencias son históricas. Consultar las notas de cada kit.

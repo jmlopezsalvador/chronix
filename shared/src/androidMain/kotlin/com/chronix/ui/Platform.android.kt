@@ -1,17 +1,31 @@
 package com.chronix.ui
 
+import android.app.Activity
 import android.content.Context
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 
 /** Android: sin comportamiento especial (aquí iría el modo inmersivo, pantalla siempre encendida, etc.). */
 @Composable
-actual fun SystemBarsEffect() {}
+actual fun SystemBarsEffect(darkBackground: Boolean) {
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as? Activity)?.window ?: return@SideEffect
+            val controller = WindowCompat.getInsetsController(window, view)
+            controller.isAppearanceLightStatusBars = !darkBackground
+            controller.isAppearanceLightNavigationBars = !darkBackground
+        }
+    }
+}
 
 @Composable
 actual fun rememberVibrate(): () -> Unit {

@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
  * y se implementa en androidMain / iosMain. Todo lo demás va en común.
  */
 @Composable
-expect fun SystemBarsEffect()
+expect fun SystemBarsEffect(darkBackground: Boolean)
 
 /** Devuelve una función que hace vibrar el móvil (pulso corto y firme). */
 @Composable

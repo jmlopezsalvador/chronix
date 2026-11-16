@@ -1,0 +1,384 @@
+[
+  {
+    "id": "iphone",
+    "name": "Apple iPhone",
+    "version": "iOS 17 en la secuencia principal",
+    "models": "Familia iPhone. El terminal exacto de TechBone no está identificado.",
+    "look": "Fondo negro, cifras blancas muy finas y grandes, controles circulares y acento naranja. Verde para iniciar y rojo para detener. La lectura del tiempo domina la pantalla.",
+    "elements": [
+      "Tiempo total en la mitad superior.",
+      "Dos botones: Vuelta y Start o Stopp.",
+      "Lista inferior de vueltas con extremos verde y rojo.",
+      "Dos puntos indican la alternativa digital o analógica."
+    ],
+    "flow": [
+      "Abrir Reloj y entrar en Cronómetro.",
+      "Iniciar y registrar vueltas sin detener el total.",
+      "Pausar conserva la sesión; reanudar continúa; restablecer borra el total y las vueltas.",
+      "Deslizar horizontalmente cambia entre vista digital y analógica."
+    ],
+    "notes": "La secuencia iOS 17 cubre cero y marcha con vueltas, sin captura de pausa. La comparativa analógica es de febrero de 2023, sin versión exacta indicada. La imagen de la guía de Apple se incluye separadamente, sin atribuirla a iOS 17.",
+    "shots": [
+      {
+        "index": 3,
+        "title": "Inicio en cero",
+        "caption": "Vuelta desactivada y Start disponible.",
+        "file": "iphone/capturas/03.png"
+      },
+      {
+        "index": 4,
+        "title": "En marcha con vueltas",
+        "caption": "Stopp detiene; las vueltas permanecen debajo.",
+        "file": "iphone/capturas/04.png"
+      },
+      {
+        "index": 6,
+        "title": "Digital y analógico",
+        "caption": "Comparativa editorial de 2023 con marco del teléfono.",
+        "file": "iphone/capturas/06.png"
+      },
+      {
+        "index": 5,
+        "title": "Referencia de Apple",
+        "caption": "Imagen de documentación; no acredita iOS 17.",
+        "file": "iphone/capturas/05.png"
+      }
+    ],
+    "sources": [
+      [
+        "Capturas iOS 17",
+        "https://www.techbone.de/apple/iphone/stoppuhr"
+      ],
+      [
+        "Funcionamiento oficial",
+        "https://support.apple.com/en-gb/guide/iphone/iph96b1e460/ios"
+      ],
+      [
+        "Comparativa analógica",
+        "https://www.iphone-ticker.de/in-ios-versteckt-iphone-stoppuhr-mit-runden-und-sekundenzeiger-207673/"
+      ]
+    ]
+  },
+  {
+    "id": "samsung",
+    "name": "Samsung Galaxy",
+    "version": "Android 14 y One UI 6",
+    "models": "Familia Galaxy. La guía vincula Galaxy S24 Ultra y A55, entre otros; no identifica el terminal capturado.",
+    "look": "Interfaz clara y sobria, mucho espacio vacío y contador centrado. Botones bajos en forma de pastilla; acción principal violeta al iniciar o continuar y roja al detener.",
+    "elements": [
+      "Total grande y parcial actual más pequeño.",
+      "Tabla de vuelta, duración y acumulado.",
+      "Controles laterales con texto.",
+      "Pestañas inferiores subrayadas y acceso superior a copiar con vueltas."
+    ],
+    "flow": [
+      "Abrir Reloj y entrar en Cronómetro.",
+      "Iniciar y registrar vueltas sin detener el total.",
+      "Pausar conserva la sesión; reanudar continúa; restablecer borra el total y las vueltas."
+    ],
+    "notes": "Referencia visual One UI 6. No se presenta como captura de One UI 8 ni como prueba específica de un Galaxy S26.",
+    "shots": [
+      {
+        "index": 3,
+        "title": "Inicio en cero",
+        "caption": "Runde inactivo y Starten disponible.",
+        "file": "samsung/capturas/03.png"
+      },
+      {
+        "index": 4,
+        "title": "Medición en marcha",
+        "caption": "Runde y Stopp son las acciones principales.",
+        "file": "samsung/capturas/04.png"
+      },
+      {
+        "index": 5,
+        "title": "Vueltas registradas",
+        "caption": "Tabla de parciales y tiempo acumulado.",
+        "file": "samsung/capturas/05.png"
+      },
+      {
+        "index": 6,
+        "title": "Pausa y reanudación",
+        "caption": "Zurücks. restablece; Fortsetzen continúa.",
+        "file": "samsung/capturas/06.png"
+      }
+    ],
+    "sources": [
+      [
+        "Secuencia de capturas",
+        "https://www.techbone.de/samsung/galaxy/stoppuhr"
+      ],
+      [
+        "Soporte oficial",
+        "https://www.samsung.com/ae/support/mobile-devices/what-are-the-features-of-the-samsung-clock/"
+      ]
+    ]
+  },
+  {
+    "id": "pixel",
+    "name": "Google Pixel",
+    "version": "Google Clock 8.1 y Material 3 Expressive",
+    "models": "Familia Pixel y otros Android con Google Clock. Modelos exactos capturados no identificados.",
+    "look": "Tema oscuro, cifras prominentes, botones muy grandes apilados y esquinas redondeadas. Las vueltas se agrupan en tarjetas. Las capturas Expressive muestran dos paletas diferentes.",
+    "elements": [
+      "Contador digital en la zona superior.",
+      "Tarjetas numeradas para parciales.",
+      "Stop, Reset y Lap ocupan el ancho inferior.",
+      "Navegación inferior con cinco secciones."
+    ],
+    "flow": [
+      "Entrar en Stopwatch desde la barra inferior.",
+      "La captura Expressive muestra una sesión activa con vueltas y acciones Stop, Reset y Lap.",
+      "La referencia anterior presenta pausa central y acciones laterales con iconos."
+    ],
+    "notes": "Cobertura parcial: no hay capturas independientes de cero ni pausa en Clock 8.1. Material You se incluye para comparar; su versión exacta no está identificada. No se afirma que 8.1 sea la versión más reciente en noviembre de 2026.",
+    "shots": [
+      {
+        "index": 1,
+        "title": "Expressive con vueltas",
+        "caption": "Publicada el 22 de agosto de 2025.",
+        "file": "pixel/capturas/01.png"
+      },
+      {
+        "index": 3,
+        "title": "Expressive en otra paleta",
+        "caption": "Segunda captura de Android Authority.",
+        "file": "pixel/capturas/03.jpg"
+      },
+      {
+        "index": 2,
+        "title": "Diseño anterior Material You",
+        "caption": "Anillo e iconos; no pertenece a la secuencia 8.1.",
+        "file": "pixel/capturas/02.png"
+      }
+    ],
+    "sources": [
+      [
+        "Rediseño y capturas",
+        "https://9to5google.com/2025/08/22/google-clock-material-3-expressive/"
+      ],
+      [
+        "Segunda paleta",
+        "https://www.androidauthority.com/google-clock-expressive-release-3590370/"
+      ],
+      [
+        "Despliegue",
+        "https://9to5google.com/2025/08/27/google-clock-material-3-expressive-redesign/"
+      ]
+    ]
+  },
+  {
+    "id": "xiaomi",
+    "name": "Xiaomi Redmi y POCO",
+    "version": "Android 15 y HyperOS 2",
+    "models": "La guía vincula Xiaomi 14 Ultra y Redmi Note 13 Pro 5G, entre otros. POCO requiere comprobar la app instalada; terminal capturado no identificado.",
+    "look": "Fondo claro, cifras negras de peso marcado y acciones azules con iconos. La pantalla inicial dedica casi todo el espacio al contador; con vueltas, el total sube.",
+    "elements": [
+      "Título superior y menú de tres puntos.",
+      "Contador y lista de vuelta, parcial y acumulado.",
+      "Bandera y pausa durante la marcha.",
+      "Cuadrado para restablecer y triángulo para continuar."
+    ],
+    "flow": [
+      "Abrir Reloj y entrar en Cronómetro.",
+      "Iniciar y registrar vueltas sin detener el total.",
+      "Pausar conserva la sesión; reanudar continúa; restablecer borra el total y las vueltas."
+    ],
+    "notes": "Capturas HyperOS 2; no se extrapolan a HyperOS 3. Pertenecer a Xiaomi, Redmi o POCO no garantiza idéntica aplicación o versión.",
+    "shots": [
+      {
+        "index": 3,
+        "title": "Inicio en cero",
+        "caption": "Reproducción azul en una pastilla blanca.",
+        "file": "xiaomi/capturas/03.png"
+      },
+      {
+        "index": 4,
+        "title": "Medición en marcha",
+        "caption": "Bandera y pausa separadas.",
+        "file": "xiaomi/capturas/04.png"
+      },
+      {
+        "index": 5,
+        "title": "Listado de vueltas",
+        "caption": "Parciales y acumulados bajo el total.",
+        "file": "xiaomi/capturas/05.png"
+      },
+      {
+        "index": 6,
+        "title": "Pausa",
+        "caption": "Restablecimiento y reproducción.",
+        "file": "xiaomi/capturas/06.png"
+      }
+    ],
+    "sources": [
+      [
+        "Secuencia de capturas",
+        "https://www.techbone.de/xiaomi/smartphone/stoppuhr"
+      ],
+      [
+        "Manual oficial HyperOS",
+        "https://gl123.alsgp0.mi-fds.com/gl123/Generic%20User%20Guide%20for%20HyperOS/Generic%20User%20Guide%20for%20HyperOS-ES%28LA%29.pdf"
+      ]
+    ]
+  },
+  {
+    "id": "oneplus",
+    "name": "OnePlus",
+    "version": "Android 12 y OxygenOS 12",
+    "models": "Familia OnePlus con esta versión de Reloj. Terminal capturado no identificado; no atribuir estas imágenes a OnePlus 13 o 15.",
+    "look": "Contador dentro de una esfera fina que se convierte en arco azul. Fondo claro, controles circulares y poco texto. Las vueltas también se distinguen por color.",
+    "elements": [
+      "Esfera con tiempo total.",
+      "Tabla de duración y tiempo intermedio.",
+      "Pausa central y bandera a la derecha.",
+      "En pausa: restablecer, reproducir y compartir."
+    ],
+    "flow": [
+      "Abrir Reloj y entrar en Cronómetro.",
+      "Iniciar y registrar vueltas sin detener el total.",
+      "Pausar conserva la sesión; reanudar continúa; restablecer borra el total y las vueltas.",
+      "El icono de compartir aparece en pausa; el manual de OnePlus también documenta compartir resultados."
+    ],
+    "notes": "Referencia histórica OxygenOS 12. No representa OxygenOS 16. No se capturó la hoja del sistema para compartir.",
+    "shots": [
+      {
+        "index": 3,
+        "title": "Inicio en cero",
+        "caption": "Círculo con tiempo y reproducción azul.",
+        "file": "oneplus/capturas/03.png"
+      },
+      {
+        "index": 4,
+        "title": "Medición en marcha",
+        "caption": "Pausa central y bandera lateral.",
+        "file": "oneplus/capturas/04.png"
+      },
+      {
+        "index": 5,
+        "title": "Vueltas",
+        "caption": "Arco azul y tabla de parciales.",
+        "file": "oneplus/capturas/05.png"
+      },
+      {
+        "index": 6,
+        "title": "Pausa y acciones",
+        "caption": "Restablecer, continuar y compartir.",
+        "file": "oneplus/capturas/06.png"
+      }
+    ],
+    "sources": [
+      [
+        "Secuencia de capturas",
+        "https://www.techbone.de/oneplus/smartphone/stoppuhr"
+      ],
+      [
+        "Manual oficial OnePlus 10 Pro",
+        "https://service.oneplus.com/content/dam/support/user-manuals/common/OnePlus_10_Pro_User_Manual_EN.pdf"
+      ]
+    ]
+  },
+  {
+    "id": "huawei",
+    "name": "Huawei",
+    "version": "Android 10 y EMUI 12",
+    "models": "Familia Huawei con EMUI 12. La documentación incluye P30, P40 y Mate 40 Pro, entre otros; terminal capturado no identificado.",
+    "look": "Esfera analógica prominente, graduaciones y aguja naranja, con volumen y sombra suaves. El dato digital queda debajo. Las vueltas forman tarjetas blancas sobre fondo claro.",
+    "elements": [
+      "Esfera analógica superior.",
+      "Total digital y parcial activo debajo.",
+      "Lista numerada de tiempos.",
+      "Botón azul central y controles secundarios laterales."
+    ],
+    "flow": [
+      "Abrir Reloj y entrar en Cronómetro.",
+      "Iniciar y registrar vueltas sin detener el total.",
+      "Pausar conserva la sesión; reanudar continúa; restablecer borra el total y las vueltas."
+    ],
+    "notes": "Capturas EMUI 12. No se trasladan a HarmonyOS NEXT ni a las familias Pura recientes.",
+    "shots": [
+      {
+        "index": 3,
+        "title": "Inicio en cero",
+        "caption": "Esfera y reproducción central.",
+        "file": "huawei/capturas/03.png"
+      },
+      {
+        "index": 4,
+        "title": "Medición en marcha",
+        "caption": "Aguja desplazada y botón de pausa.",
+        "file": "huawei/capturas/04.png"
+      },
+      {
+        "index": 5,
+        "title": "Vueltas",
+        "caption": "Tarjetas de parciales y acumulado.",
+        "file": "huawei/capturas/05.png"
+      },
+      {
+        "index": 6,
+        "title": "Pausa",
+        "caption": "Tiempo retenido y reproducción disponible.",
+        "file": "huawei/capturas/06.png"
+      }
+    ],
+    "sources": [
+      [
+        "Secuencia de capturas",
+        "https://www.techbone.de/huawei/smartphone/stoppuhr"
+      ],
+      [
+        "Soporte oficial EMUI 11 y 12",
+        "https://consumer.huawei.com/uk/support/content/en-gb15769052/"
+      ]
+    ]
+  },
+  {
+    "id": "oppo",
+    "name": "OPPO",
+    "version": "Android 13 y ColorOS 13",
+    "models": "Familia OPPO con esta aplicación Reloj. Modelo exacto no identificado en la fuente.",
+    "look": "Esfera blanca con relieve y sombra azul violeta. El tiempo digital ocupa el centro; parte de sus dígitos se acentúa en azul. Combina una metáfora de instrumento físico y controles modernos.",
+    "elements": [
+      "Esfera grande con marcas discretas.",
+      "Pausa azul central y bandera lateral.",
+      "Restablecimiento con flecha circular.",
+      "Tabla de vuelta, duración y total; extremos coloreados."
+    ],
+    "flow": [
+      "Abrir Reloj, entrar en Cronómetro e iniciar con el triángulo.",
+      "En marcha, la bandera añade vueltas y pausa detiene la medición."
+    ],
+    "notes": "Marcha y vueltas proceden de la secuencia ColorOS 13 archivada en la misma página. No hay captura independiente de pausa. No representan ColorOS 15 o 16.",
+    "shots": [
+      {
+        "index": 3,
+        "title": "Inicio en cero",
+        "caption": "Esfera y reproducción azul.",
+        "file": "oppo/capturas/03.png"
+      },
+      {
+        "index": 4,
+        "title": "Medición en marcha",
+        "caption": "Restablecer, pausa y bandera.",
+        "file": "oppo/capturas/04.png"
+      },
+      {
+        "index": 5,
+        "title": "Vueltas",
+        "caption": "Tabla bajo la esfera y parcial actual.",
+        "file": "oppo/capturas/05.png"
+      }
+    ],
+    "sources": [
+      [
+        "Guía y capturas ColorOS 13",
+        "https://www.techbone.de/oppo/smartphone/stoppuhr"
+      ],
+      [
+        "Manual oficial ColorOS 7 como antecedente",
+        "https://ipics.oppo.com/oppo_nl/answer/06_2020_DE_ColorOS7_v.4.5.2.pdf"
+      ]
+    ]
+  }
+]

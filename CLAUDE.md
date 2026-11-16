@@ -31,15 +31,15 @@ El usuario habla español: responde y comenta el código en español.
 ## Qué hace la app
 Herramienta para un **efecto de magia**: emula la app de reloj de un fabricante (Alarma, Reloj mundial, Cronómetro,
 Temporizador). En la fase 1 solo el **cronómetro** es funcional y realista; las otras pestañas no hacen nada.
-- Varios *look and feel* (Samsung primero; referencias en `data/Visuales/`), elegibles en ajustes secretos.
+- 7 *look and feel* (Samsung, iPhone, Pixel, OnePlus, OPPO, Xiaomi, Huawei; referencias en `data/Visuales/` y `data/kit/`), elegibles en ajustes secretos.
 - **Ajustes secretos:** pulsación larga (1,5 s configurable) en la esquina superior derecha, zona invisible.
 - **Modo forzaje:** pulsación larga en *Restablecer* → vibración → las centésimas de las vueltas/pausas configuradas
   se fuerzan a los valores guardados; al agotarlos, el cronómetro vuelve a ser normal. Nada debe ser visible.
 - Detalle y decisiones en `docs/SPEC.md` (fuente de verdad funcional).
-- **Código:** lógica pura en `shared/.../domain/Stopwatch.kt` (reloj inyectado, con tests); temas en `ui/ClockTheme.kt`
-  (para otro fabricante: nuevo `ClockTheme` en `ClockThemes.all`); `ui/StopwatchScreen.kt`, `ui/SecretSettingsScreen.kt`.
-- **Estado (fase 1):** cronómetro Samsung + forzaje + ajustes secretos hechos y con tests. Verificado solo por compilación/tests,
-  falta probar en emulador/móvil. iOS sin compilar aún (la háptica `UIImpactFeedbackGenerator` y los gestos son lo más arriesgado).
+- **Código:** lógica pura en `shared/.../domain/Stopwatch.kt` (reloj inyectado, con tests); temas en `ui/ClockTheme.kt`;
+  un composable por diseño en `ui/<Marca>Style.kt` (despacha `ui/StopwatchScreen.kt`); piezas comunes en `ui/Common.kt`,
+  `Icons.kt`, `Dials.kt`, `Widgets.kt`. Para otro fabricante: nuevo `ClockTheme` + `ClockStyle` + su `<Marca>Style.kt`.
+- **Estado (fase 1):** cronómetro en 7 diseños + forzaje + ajustes secretos. Probado en el emulador Android (los 7 diseños, forzaje en Samsung y OnePlus); falta probarlo en un móvil real (vibración). iOS sin compilar aún (la háptica `UIImpactFeedbackGenerator` y los gestos son lo más arriesgado).
 
 ## Reglas de código para que compile en iOS
 - En `commonMain`: nada de `java.*` ni `android.*`. Usar `kotlinx-datetime` (0.6.1), `kotlin.math.*` y, si hace falta aritmética
