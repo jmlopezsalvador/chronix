@@ -40,8 +40,10 @@ class StopwatchScreenParams(
     val onArmForcing: () -> Unit,
 ) {
     val sw get() = state.sw
-    val phase: Phase get() = state.sw.phase
-    val laps: List<Lap> get() = state.sw.laps
+
+    // Leer `rev` suscribe a quien lo lee a los cambios de fase y vueltas (el Stopwatch no es estado de Compose).
+    val phase: Phase get() { state.rev; return state.sw.phase }
+    val laps: List<Lap> get() { state.rev; return state.sw.laps }
     val now: Long get() = state.now
     val marks: Map<Int, LapMark> get() = if (theme.colorLaps) lapMarks(state.sw.laps) else emptyMap()
 

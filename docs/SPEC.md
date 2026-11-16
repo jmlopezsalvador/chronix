@@ -31,13 +31,13 @@ centésimas** de las vueltas y de la parada a valores preparados de antemano.
 - R11. Varios aspectos visuales de la misma app, imitando el reloj de cada fabricante. Referencias en `data/Visuales/` y, sobre todo, en `data/kit/Kit_cronometros/<marca>/` (Ficha.md + capturas): **Samsung, iPhone, Pixel, OnePlus, OPPO, Xiaomi y Huawei**.
 - R12. **Samsung** (One UI): fondo degradado lila claro, botones circulares (secundario blanco, primario lila con texto azul; Parar en rosa con texto rojo), barra inferior en píldora con iconos, dos puntos de página, menú de tres puntos.
 - R13. Los temas se eligen en los ajustes secretos. Cada diseño es un composable propio (`ui/*Style.kt`) con su `ClockTheme` (colores, textos en español, pestañas). Todos comparten la lógica y el gesto de armado, que va en su botón de reinicio (Pixel: siempre visible; el resto: en pausa).
-- R13b. iPhone: dos páginas deslizables (digital / analógica). Huawei, OnePlus y OPPO llevan esfera, aro o esfera punteada. Samsung: los dos puntos de página son solo decorativos (falta una captura de su otra vista).
+- R13b. iPhone: dos páginas deslizables (digital / analógica). Huawei, OnePlus y OPPO llevan esfera, aro o esfera punteada. Samsung: dos páginas deslizables (`data/Visuales/Samsung 5.jpeg`): analógica (primer punto: corona de marcas, tiempo digital en el centro, aguja azul del total y gris de la vuelta, tabla debajo) y digital (segundo punto, la de inicio).
 - R13c. Colores de vueltas por diseño; Xiaomi y Huawei no colorean. Los textos usan coma decimal.
 - R14. La arquitectura debe separar la **lógica** del cronómetro de la **presentación**, para añadir temas sin tocar la lógica.
 
 ## 5. Ajustes secretos
 - R15. Acceso: **pulsación larga en la esquina superior derecha** (zona invisible). Duración por defecto **1,5 s**, configurable.
-- R16. Contenido (fase 1):
+- R16. Contenido (fase 1; las cajas de centésimas son de texto numérico normal, se pueden borrar y el teclado se cierra al tocar fuera):
   - Elegir el look and feel.
   - Duración de la pulsación larga de acceso.
   - **Lista de centésimas forzadas** por vuelta (vuelta 1, 2, 3, 4…): dos dígitos cada una.

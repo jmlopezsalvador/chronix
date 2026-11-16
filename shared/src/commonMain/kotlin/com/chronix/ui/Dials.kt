@@ -144,3 +144,49 @@ fun DottedDial(elapsedMs: Long, modifier: Modifier = Modifier, accent: Color) {
         drawCircle(accent, r * 0.026f, head)
     }
 }
+
+/**
+ * Esfera de Samsung (One UI): corona de 60 marcas (cada 5, oscura y larga), disco blanco central con el tiempo digital
+ * (`content`) y dos agujas encima: la de segundos del total (azul) y la de la vuelta en curso (gris, si `showLap`).
+ */
+@Composable
+fun SamsungDial(
+    elapsedMs: Long,
+    lapMs: Long,
+    showLap: Boolean,
+    modifier: Modifier = Modifier,
+    hand: Color,
+    content: @Composable () -> Unit,
+) {
+    androidx.compose.foundation.layout.Box(modifier, contentAlignment = androidx.compose.ui.Alignment.Center) {
+        Canvas(Modifier.matchParentSize()) {
+            val c = Offset(size.width / 2, size.height / 2)
+            val r = size.width / 2
+            // Disco central con un halo suave
+            drawCircle(Brush.radialGradient(listOf(Color(0x14000000), Color.Transparent), c, r * 0.82f), r * 0.82f, c)
+            drawCircle(Color(0xFFFAFAFE), r * 0.68f, c)
+            for (i in 0 until 60) {
+                val big = i % 5 == 0
+                val outer = r * 0.99f
+                val len = if (big) r * 0.065f else r * 0.045f
+                drawLine(
+                    if (big) Color(0xFF1A1A1F) else Color(0xFFD2D4E2),
+                    polar(c, outer, i * 6f), polar(c, outer - len, i * 6f),
+                    if (big) r * 0.022f else r * 0.018f, StrokeCap.Round,
+                )
+            }
+        }
+        content()
+        Canvas(Modifier.matchParentSize()) {
+            val c = Offset(size.width / 2, size.height / 2)
+            val r = size.width / 2
+            if (showLap) {
+                val d = lapMs % 60_000L / REV_MS * 360f
+                drawLine(Color(0xFFA0A0A8), c, polar(c, r * 0.96f, d), r * 0.012f, StrokeCap.Round)
+            }
+            val deg = elapsedMs % 60_000L / REV_MS * 360f
+            drawLine(hand, polar(c, -r * 0.1f, deg), polar(c, r * 0.9f, deg), r * 0.026f, StrokeCap.Round)
+            drawCircle(hand, r * 0.04f, c)
+        }
+    }
+}

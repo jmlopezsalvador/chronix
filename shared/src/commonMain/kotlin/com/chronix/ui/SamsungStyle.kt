@@ -1,10 +1,13 @@
 package com.chronix.ui
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -12,9 +15,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -22,56 +28,48 @@ import androidx.compose.ui.unit.sp
 import com.chronix.domain.Phase
 import com.chronix.domain.formatCs
 
-/** Samsung One UI: fondo degradado lila, botones circulares y barra inferior en píldora. */
+/**
+ * Samsung One UI: fondo degradado lila, botones circulares y barra inferior en píldora.
+ * Dos páginas deslizables (los dos puntos): analógica (primer punto) y digital (segundo, la de inicio).
+ */
 @Composable
 fun SamsungStopwatch(p: StopwatchScreenParams) {
     val t = p.theme
     val state = p.state
-    val sw = p.sw
-    val now = p.now
     val phase = p.phase
     val laps = p.laps
-    val d = t.decimal
-    val timeStyle = digits(54, t.text, FontWeight.SemiBold)
+    val pager = rememberPagerState(initialPage = 1, pageCount = { 2 })
 
     Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(t.bgTop, t.bgBottom)))) {
         Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing)) {
-            // Menú de tres puntos (decorativo)
+            // Barra superior: «copiar vueltas» (solo con vueltas) y menú de tres puntos, ambos decorativos
             Row(Modifier.fillMaxWidth().height(72.dp).padding(end = 24.dp), horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically) {
-                androidx.compose.foundation.Canvas(Modifier.size(24.dp)) {
+                if (laps.isNotEmpty()) {
+                    Canvas(Modifier.size(26.dp)) {
+                        val w = size.width
+                        val st = Stroke(w * 0.09f)
+                        drawRoundRect(t.text, Offset(w * 0.3f, w * 0.08f), Size(w * 0.6f, w * 0.6f), CornerRadius(w * 0.12f), style = st)
+                        drawRoundRect(t.text, Offset(w * 0.1f, w * 0.3f), Size(w * 0.6f, w * 0.6f), CornerRadius(w * 0.12f), style = st)
+                    }
+                    Spacer(Modifier.width(22.dp))
+                }
+                Canvas(Modifier.size(24.dp)) {
                     val r = size.width * 0.075f
                     for (i in 0..2) drawCircle(t.text, r, Offset(size.width / 2, size.height * (0.2f + 0.3f * i)))
                 }
             }
 
-            if (laps.isEmpty()) {
-                Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Text(formatCs(sw.elapsedCs(now), d), style = timeStyle)
-                }
-            } else {
-                Text(formatCs(sw.elapsedCs(now), d), style = timeStyle, modifier = Modifier.fillMaxWidth().padding(top = 28.dp))
-                Text(
-                    formatCs(sw.currentLapCs(now), d),
-                    style = timeStyle.copy(fontSize = 30.sp, color = t.textSecondary),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Spacer(Modifier.height(28.dp))
-                LapRow(t.headerLap, t.headerLapTime, t.headerTotal, t.textSecondary, header = true)
-                Box(Modifier.padding(horizontal = 32.dp).fillMaxWidth().height(1.dp).background(Color(0x33000000)))
-                LazyColumn(Modifier.weight(1f).fillMaxWidth().padding(top = 8.dp)) {
-                    items(laps.asReversed(), key = { it.number }) { lap ->
-                        val color = p.lapColor(lap, t.text)
-                        LapRow(pad2(lap.number), formatCs(lap.lapCs, d), formatCs(lap.totalCs, d), color, header = false)
-                    }
-                }
+            HorizontalPager(pager, Modifier.weight(1f).fillMaxWidth()) { page ->
+                if (page == 0) AnalogPage(p) else DigitalPage(p)
             }
 
-            // Puntos de página (decorativos)
+            // Puntos de página: el activo es más oscuro
             Row(Modifier.fillMaxWidth().padding(vertical = 18.dp), horizontalArrangement = Arrangement.Center) {
-                Box(Modifier.size(9.dp).clip(CircleShape).background(Color(0x55000000)))
-                Spacer(Modifier.width(14.dp))
-                Box(Modifier.size(9.dp).clip(CircleShape).background(Color(0x99000000)))
+                for (i in 0..1) {
+                    if (i > 0) Spacer(Modifier.width(14.dp))
+                    Box(Modifier.size(9.dp).clip(CircleShape).background(if (pager.currentPage == i) Color(0x99000000) else Color(0x44000000)))
+                }
             }
 
             Row(Modifier.fillMaxWidth().padding(horizontal = 28.dp), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -95,6 +93,69 @@ fun SamsungStopwatch(p: StopwatchScreenParams) {
             Spacer(Modifier.height(20.dp))
         }
         SecretCorner(p, Modifier.align(Alignment.TopEnd))
+    }
+}
+
+/** Página digital: total grande, vuelta en curso en gris y tabla. */
+@Composable
+private fun DigitalPage(p: StopwatchScreenParams) {
+    val t = p.theme
+    val sw = p.sw
+    val now = p.now
+    val d = t.decimal
+    val timeStyle = digits(54, t.text, FontWeight.SemiBold)
+    if (p.laps.isEmpty()) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(formatCs(sw.elapsedCs(now), d), style = timeStyle)
+        }
+    } else {
+        Column(Modifier.fillMaxSize()) {
+            Text(formatCs(sw.elapsedCs(now), d), style = timeStyle, modifier = Modifier.fillMaxWidth().padding(top = 28.dp))
+            Text(
+                formatCs(sw.currentLapCs(now), d),
+                style = timeStyle.copy(fontSize = 30.sp, color = t.textSecondary),
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Spacer(Modifier.height(28.dp))
+            LapTable(p, Modifier.weight(1f))
+        }
+    }
+}
+
+/** Página analógica: esfera con marcas y dos agujas, el total digital en el centro y la tabla debajo. */
+@Composable
+private fun AnalogPage(p: StopwatchScreenParams) {
+    val t = p.theme
+    val sw = p.sw
+    val now = p.now
+    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Spacer(Modifier.height(4.dp))
+        SamsungDial(
+            sw.elapsedMs(now), sw.currentLapCs(now) * 10, p.laps.isNotEmpty(),
+            Modifier.fillMaxWidth(0.8f).aspectRatio(1f), hand = Color(0xFF5B5BD6),
+        ) {
+            Text(formatCs(sw.elapsedCs(now), t.decimal), style = digits(36, t.text, FontWeight.Bold), maxLines = 1)
+        }
+        Spacer(Modifier.height(10.dp))
+        LapTable(p, Modifier.weight(1f))
+    }
+}
+
+/** Cabecera y tabla de vueltas (la última arriba). */
+@Composable
+private fun LapTable(p: StopwatchScreenParams, modifier: Modifier) {
+    val t = p.theme
+    val d = t.decimal
+    Column(modifier.fillMaxWidth()) {
+        if (p.laps.isNotEmpty()) {
+            LapRow(t.headerLap, t.headerLapTime, t.headerTotal, t.textSecondary, header = true)
+            Box(Modifier.padding(horizontal = 32.dp).fillMaxWidth().height(1.dp).background(Color(0x33000000)))
+        }
+        LazyColumn(Modifier.weight(1f).fillMaxWidth().padding(top = 6.dp)) {
+            items(p.laps.asReversed(), key = { it.number }) { lap ->
+                LapRow(pad2(lap.number), formatCs(lap.lapCs, d), formatCs(lap.totalCs, d), p.lapColor(lap, t.text), header = false)
+            }
+        }
     }
 }
 
