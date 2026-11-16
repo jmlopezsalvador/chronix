@@ -68,7 +68,7 @@ fun IPhoneStopwatch(p: StopwatchScreenParams) {
             }
             Spacer(Modifier.height(18.dp))
             // Lista: fila de la vuelta en curso arriba, y las vueltas hechas debajo
-            LazyColumn(Modifier.weight(1f).fillMaxWidth().padding(horizontal = 20.dp)) {
+            LazyColumn(state = rememberLapListState(p.laps.size), modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 20.dp)) {
                 if (phase != Phase.IDLE) {
                     item { Row1("${t.lapLabel} ${laps.size + 1}", formatCs(sw.currentLapCs(now), t.decimal), t.text) }
                 }

@@ -63,7 +63,7 @@ fun OppoStopwatch(p: StopwatchScreenParams) {
                     Text(t.headerTotal, style = digits(15, t.textSecondary, align = TextAlign.End), modifier = Modifier.weight(1f))
                 }
             }
-            LazyColumn(Modifier.weight(1f).fillMaxWidth().padding(horizontal = 30.dp).padding(top = 10.dp)) {
+            LazyColumn(state = rememberLapListState(p.laps.size), modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 30.dp).padding(top = 10.dp)) {
                 items(laps.asReversed(), key = { it.number }) { lap ->
                     val c = p.lapColor(lap, t.text)
                     Row(Modifier.fillMaxWidth().padding(vertical = 12.dp)) {

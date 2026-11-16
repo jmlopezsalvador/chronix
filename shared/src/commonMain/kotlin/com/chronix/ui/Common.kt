@@ -124,3 +124,14 @@ fun PillBottomBar(theme: ClockTheme) {
         }
     }
 }
+
+/**
+ * Estado de la lista de vueltas (la última arriba): al registrar una vuelta salta a ella, para que siempre se vea
+ * la última aunque las vueltas ya no quepan en pantalla (si no, Compose mantiene fija la primera fila visible).
+ */
+@Composable
+fun rememberLapListState(lapCount: Int): androidx.compose.foundation.lazy.LazyListState {
+    val state = androidx.compose.foundation.lazy.rememberLazyListState()
+    LaunchedEffect(lapCount) { if (lapCount > 0) state.animateScrollToItem(0) }
+    return state
+}

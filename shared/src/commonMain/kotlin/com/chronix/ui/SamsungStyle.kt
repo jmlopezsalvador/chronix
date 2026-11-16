@@ -151,7 +151,7 @@ private fun LapTable(p: StopwatchScreenParams, modifier: Modifier) {
             LapRow(t.headerLap, t.headerLapTime, t.headerTotal, t.textSecondary, header = true)
             Box(Modifier.padding(horizontal = 32.dp).fillMaxWidth().height(1.dp).background(Color(0x33000000)))
         }
-        LazyColumn(Modifier.weight(1f).fillMaxWidth().padding(top = 6.dp)) {
+        LazyColumn(state = rememberLapListState(p.laps.size), modifier = Modifier.weight(1f).fillMaxWidth().padding(top = 6.dp)) {
             items(p.laps.asReversed(), key = { it.number }) { lap ->
                 LapRow(pad2(lap.number), formatCs(lap.lapCs, d), formatCs(lap.totalCs, d), p.lapColor(lap, t.text), header = false)
             }

@@ -42,7 +42,7 @@ fun HuaweiStopwatch(p: StopwatchScreenParams) {
                 if (laps.isNotEmpty()) formatCs(sw.currentLapCs(now), d) else " ",
                 style = digits(17, t.textSecondary), modifier = Modifier.fillMaxWidth(),
             )
-            LazyColumn(
+            LazyColumn(state = rememberLapListState(p.laps.size), modifier = 
                 Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp).padding(top = 10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {

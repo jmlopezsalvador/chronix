@@ -40,7 +40,7 @@ fun XiaomiStopwatch(p: StopwatchScreenParams) {
             Text(formatCs(p.sw.elapsedCs(p.now), d), style = digits(56, t.text, FontWeight.Light),
                 modifier = Modifier.fillMaxWidth(), maxLines = 1)
             Spacer(Modifier.height(34.dp))
-            LazyColumn(Modifier.weight(1f).fillMaxWidth().padding(horizontal = 30.dp)) {
+            LazyColumn(state = rememberLapListState(p.laps.size), modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 30.dp)) {
                 items(p.laps.asReversed(), key = { it.number }) { lap ->
                     Row(Modifier.fillMaxWidth().padding(vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text(pad2(lap.number), style = digits(19, t.textSecondary, align = TextAlign.Start), modifier = Modifier.weight(0.6f))
