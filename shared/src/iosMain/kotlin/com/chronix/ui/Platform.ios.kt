@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSUserDefaults
-import platform.UIKit.UIApplication
 import platform.UIKit.UIImpactFeedbackGenerator
 import platform.UIKit.UIImpactFeedbackStyle
 
@@ -35,12 +34,23 @@ private class IosAppearance : AppAppearance {
     override val restartsApp = false
 
     override fun apply(iconId: String, nameId: String) {
-        val app = UIApplication.sharedApplication
-        if (!app.supportsAlternateIcons) return
         // El icono por defecto es el principal («AppIcon»): se vuelve a él con nil
         val name = if (iconId == AppIconCatalog.DEFAULT_ICON) null else "AppIcon-$iconId"
-        app.setAlternateIconName(name, completionHandler = null)
+        IosAppIconBridge.setter?.setIcon(name)
     }
+}
+
+/**
+ * Kotlin/Native no expone `UIApplication.setAlternateIconName`, así que lo hace Swift (iOSApp.swift): implementa este
+ * protocolo y se registra en [IosAppIconBridge] al arrancar.
+ */
+interface IosIconSetter {
+    /** `null` = icono principal; si no, el nombre del icono alternativo (`AppIcon-<id>`). */
+    fun setIcon(name: String?)
+}
+
+object IosAppIconBridge {
+    var setter: IosIconSetter? = null
 }
 
 class UserDefaultsStore : KeyValueStore {
