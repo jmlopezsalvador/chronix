@@ -1,5 +1,7 @@
 package com.chronix.ui
 
+import com.chronix.domain.ForceTarget
+
 /** Almacenamiento clave-valor local. Android: SharedPreferences. iOS: NSUserDefaults (ver las `actual`). */
 interface KeyValueStore {
     fun getString(key: String): String?
@@ -18,6 +20,8 @@ data class AppSettings(
     val secretHoldMs: Long = 1500L,
     /** Centésimas forzadas por vuelta (posición 0 = vuelta 1). Lista ilimitada, 4 por defecto. */
     val forcedCs: List<Int> = listOf(0, 0, 0, 0),
+    /** Dónde se fuerzan las centésimas: en el tiempo de vuelta (por defecto) o en el tiempo total. */
+    val forceTarget: ForceTarget = ForceTarget.LAP,
 )
 
 class SettingsStore(private val prefs: KeyValueStore) {
@@ -30,6 +34,7 @@ class SettingsStore(private val prefs: KeyValueStore) {
             themeId = prefs.getString("themeId") ?: d.themeId,
             secretHoldMs = prefs.getLong("secretHoldMs", d.secretHoldMs).coerceIn(300L, 10_000L),
             forcedCs = forced,
+            forceTarget = if (prefs.getString("forceTarget") == "TOTAL") ForceTarget.TOTAL else ForceTarget.LAP,
         )
     }
 
@@ -37,5 +42,6 @@ class SettingsStore(private val prefs: KeyValueStore) {
         prefs.putString("themeId", s.themeId)
         prefs.putLong("secretHoldMs", s.secretHoldMs)
         prefs.putString("forcedCs", s.forcedCs.joinToString(","))
+        prefs.putString("forceTarget", s.forceTarget.name)
     }
 }

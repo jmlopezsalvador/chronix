@@ -1,5 +1,6 @@
 package com.chronix
 
+import com.chronix.domain.ForceTarget
 import com.chronix.domain.Lap
 import com.chronix.domain.LapMark
 import com.chronix.domain.Phase
@@ -46,26 +47,92 @@ class StopwatchTest {
         assertTrue(sw.laps.isEmpty())
     }
 
-    @Test fun forcedLapsFixCentisecondsAndStayCoherent() {
+    @Test fun forcedTotalsRoundUpNeverDown() {
         val sw = Stopwatch()
         sw.resetAndArm(listOf(45, 96))
         sw.start(0)
-        sw.lap(5_480) // real 5,48 -> 5,45
-        sw.lap(11_230) // real 11,23 -> 10,96
-        assertEquals(545, sw.laps[0].totalCs)
-        assertEquals(1096, sw.laps[1].totalCs)
-        assertEquals(1096 - 545, sw.laps[1].lapCs)
+        sw.lap(5_480) // real 5,48: las centésimas 45 ya pasaron -> segundo siguiente, 6,45
+        sw.lap(11_230) // real 11,23: 96 aún no ha llegado -> mismo segundo, 11,96
+        assertEquals(645, sw.laps[0].totalCs)
+        assertEquals(1196, sw.laps[1].totalCs)
+        assertEquals(1196 - 645, sw.laps[1].lapCs)
         assertEquals(sw.laps[0].totalCs + sw.laps[1].lapCs, sw.laps[1].totalCs)
         assertFalse(sw.forcingArmed)
+    }
+
+    @Test fun lapPastTheForcedPointJumpsToNextSecond() {
+        // Caso del usuario: vuelta en el segundo 1 con 01 forzado -> 2,01 (antes salía 1,01)
+        val sw = Stopwatch()
+        sw.resetAndArm(listOf(1))
+        sw.start(0)
+        sw.lap(1_600)
+        assertEquals(201, sw.laps[0].totalCs)
+    }
+
+    @Test fun lapBeforeTheForcedPointStaysInSameSecond() {
+        val sw = Stopwatch()
+        sw.resetAndArm(listOf(50))
+        sw.start(0)
+        sw.lap(1_200)
+        assertEquals(150, sw.laps[0].totalCs)
+    }
+
+    @Test fun forcedTotalIsNeverBelowRealTime() {
+        for (real in listOf(0L, 1L, 99L, 100L, 101L, 555L, 1234L, 99_999L)) {
+            for (f in listOf(0, 1, 22, 50, 99)) {
+                val t = Stopwatch.forceTotal(real, -1, f) // sin límite por vuelta anterior: fórmula pura
+                assertTrue(t >= real, "real=$real f=$f t=$t")
+                assertTrue(t - real < 100, "salta menos de 1 s: real=$real f=$f t=$t")
+                assertEquals(f.toLong(), t % 100)
+            }
+        }
+    }
+
+    @Test fun lapTargetForcesTheLapTimeCentiseconds() {
+        // iPhone: solo se ve el tiempo de vuelta. 01, 22, 33, 04 deben verse tal cual en cada vuelta.
+        val sw = Stopwatch()
+        sw.resetAndArm(listOf(1, 22, 33, 4), ForceTarget.LAP)
+        sw.start(0)
+        val realTotals = listOf(1_600L, 3_100L, 5_800L, 6_500L)
+        realTotals.forEach { sw.lap(it) }
+        assertEquals(listOf(1L, 22L, 33L, 4L), sw.laps.map { it.lapCs % 100 })
+        // el total sale por suma y nunca va por detrás del tiempo real
+        var acc = 0L
+        sw.laps.forEachIndexed { i, lap ->
+            acc += lap.lapCs
+            assertEquals(acc, lap.totalCs)
+            assertTrue(lap.lapCs > 0)
+            assertTrue(lap.totalCs >= realTotals[i] / 10, "vuelta ${i + 1}")
+        }
+    }
+
+    @Test fun lapTargetNeverRoundsDown() {
+        val sw = Stopwatch()
+        sw.resetAndArm(listOf(1), ForceTarget.LAP)
+        sw.start(0)
+        sw.lap(1_600) // vuelta real 1,60 -> 2,01
+        assertEquals(201, sw.laps[0].lapCs)
+        assertEquals(4L, Stopwatch.forceLap(-6, 4)) // vuelta real negativa: primera duración positiva con 04
+    }
+
+    @Test fun forceLapAlwaysPositiveAndAtLeastRealLap() {
+        for (real in listOf(-250L, -6L, 0L, 1L, 99L, 100L, 160L, 5_000L)) {
+            for (f in listOf(0, 1, 22, 99)) {
+                val l = Stopwatch.forceLap(real, f)
+                assertTrue(l > 0, "real=$real f=$f l=$l")
+                assertTrue(l >= real, "real=$real f=$f l=$l")
+                assertEquals(f.toLong(), l % 100)
+            }
+        }
     }
 
     @Test fun forcingEndsAndLaterLapsAreNormal() {
         val sw = Stopwatch()
         sw.resetAndArm(listOf(10))
         sw.start(0)
-        sw.lap(2_000)
+        sw.lap(2_000) // real 2,00 -> 2,10 (mismo segundo)
         sw.lap(3_333)
-        assertEquals(110, sw.laps[0].totalCs)
+        assertEquals(210, sw.laps[0].totalCs)
         assertEquals(333, sw.laps[1].totalCs)
     }
 
@@ -73,8 +140,8 @@ class StopwatchTest {
         val sw = Stopwatch()
         sw.resetAndArm(listOf(90, 10))
         sw.start(0)
-        sw.lap(120) // real 0,12 -> 0,90 imposible (<=real) -> -0,10 -> sube a 0,90
-        sw.lap(200) // real 0,20 -> debe superar 0,90 -> 1,10
+        sw.lap(120) // real 0,12 -> 0,90
+        sw.lap(200) // real 0,20; 0,10 quedaría por detrás: sube hasta superar 0,90 -> 1,10
         assertTrue(sw.laps.all { it.lapCs > 0 })
         assertEquals(90, sw.laps[0].totalCs % 100)
         assertEquals(10, sw.laps[1].totalCs % 100)

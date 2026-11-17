@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -23,6 +24,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import com.chronix.domain.ForceTarget
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -46,6 +48,18 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun SecretSettingsScreen(settings: AppSettings, onChange: (AppSettings) -> Unit, onBack: () -> Unit) {
     val focus = LocalFocusManager.current
+    var warning by remember { mutableStateOf<String?>(null) }
+    // Cambia un ajuste; si queda «forzar en total» con un diseño que no muestra totales, avisa con un modal
+    val change: (AppSettings) -> Unit = { new ->
+        onChange(new)
+        val theme = ClockThemes.byId(new.themeId)
+        val touched = new.themeId != settings.themeId || new.forceTarget != settings.forceTarget
+        if (touched && new.forceTarget == ForceTarget.TOTAL && !theme.showsTotal) {
+            warning = "El diseño «${theme.name}» no muestra el tiempo total de las vueltas, solo el tiempo de vuelta. " +
+                "Con el forzaje en «Tiempo total» las centésimas forzadas no se verán en este diseño. " +
+                "Elige «Tiempo de vuelta» u otro diseño."
+        }
+    }
     Column(
         Modifier.fillMaxSize().background(Color.White).windowInsetsPadding(WindowInsets.safeDrawing)
             .pointerInput(Unit) { detectTapGestures { focus.clearFocus() } }
@@ -59,10 +73,23 @@ fun SecretSettingsScreen(settings: AppSettings, onChange: (AppSettings) -> Unit,
 
         Section("Look and feel")
         ClockThemes.all.forEach { t ->
-            Row(Modifier.fillMaxWidth().clickable { focus.clearFocus(); onChange(settings.copy(themeId = t.id)) },
+            Row(Modifier.fillMaxWidth().clickable { focus.clearFocus(); change(settings.copy(themeId = t.id)) },
                 verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(selected = settings.themeId == t.id, onClick = { focus.clearFocus(); onChange(settings.copy(themeId = t.id)) })
+                RadioButton(selected = settings.themeId == t.id, onClick = { focus.clearFocus(); change(settings.copy(themeId = t.id)) })
                 Text(t.name, color = Color.Black)
+            }
+        }
+
+        Section("Forzar las centésimas en")
+        Text("Lo normal es el tiempo de vuelta; el total sale como consecuencia de las vueltas.", fontSize = 13.sp, color = Color.Gray)
+        listOf(
+            ForceTarget.LAP to "Tiempo de vuelta (recomendado)",
+            ForceTarget.TOTAL to "Tiempo total",
+        ).forEach { (target, label) ->
+            Row(Modifier.fillMaxWidth().clickable { focus.clearFocus(); change(settings.copy(forceTarget = target)) },
+                verticalAlignment = Alignment.CenterVertically) {
+                RadioButton(selected = settings.forceTarget == target, onClick = { focus.clearFocus(); change(settings.copy(forceTarget = target)) })
+                Text(label, color = Color.Black)
             }
         }
 
@@ -94,6 +121,15 @@ fun SecretSettingsScreen(settings: AppSettings, onChange: (AppSettings) -> Unit,
         Spacer(Modifier.height(8.dp))
         Button(onClick = { focus.clearFocus(); onChange(settings.copy(forcedCs = settings.forcedCs + 0)) }) { Text("Añadir vuelta") }
         Spacer(Modifier.height(40.dp))
+    }
+
+    warning?.let { msg ->
+        AlertDialog(
+            onDismissRequest = { warning = null },
+            title = { Text("Este diseño no muestra el total") },
+            text = { Text(msg) },
+            confirmButton = { TextButton(onClick = { warning = null }) { Text("Entendido") } },
+        )
     }
 }
 

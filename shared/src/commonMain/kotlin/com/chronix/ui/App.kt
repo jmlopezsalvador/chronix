@@ -34,7 +34,7 @@ fun ChronixRoot(store: SettingsStore) {
                 secretHoldMs = settings.secretHoldMs,
                 onSecret = { inSettings = true },
                 onArmForcing = {
-                    stopwatch.resetAndArm(settings.forcedCs)
+                    stopwatch.resetAndArm(settings.forcedCs, settings.forceTarget)
                     vibrate()
                 },
             )

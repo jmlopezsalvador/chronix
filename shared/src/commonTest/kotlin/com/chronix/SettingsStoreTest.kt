@@ -1,5 +1,6 @@
 package com.chronix
 
+import com.chronix.domain.ForceTarget
 import com.chronix.ui.AppSettings
 import com.chronix.ui.KeyValueStore
 import com.chronix.ui.SettingsStore
@@ -29,6 +30,15 @@ class SettingsStoreTest {
         val s = store.load()
         assertEquals(2000L, s.secretHoldMs)
         assertEquals(listOf(45, 96, 7, 0, 12), s.forcedCs)
+    }
+
+    @Test fun forceTargetDefaultsToLapAndSurvivesRoundTrip() {
+        val store = SettingsStore(MemoryStore())
+        assertEquals(ForceTarget.LAP, store.load().forceTarget)
+        store.save(AppSettings(forceTarget = ForceTarget.TOTAL))
+        assertEquals(ForceTarget.TOTAL, store.load().forceTarget)
+        store.save(AppSettings(forceTarget = ForceTarget.LAP))
+        assertEquals(ForceTarget.LAP, store.load().forceTarget)
     }
 
     @Test fun emptyForcedListSurvivesRoundTrip() {

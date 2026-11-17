@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.setValue
+import com.chronix.domain.ForceTarget
 import com.chronix.domain.Stopwatch
 import kotlin.time.TimeSource
 
@@ -32,5 +33,5 @@ class StopwatchState {
     fun stop() { sw.stop(monotonicNowMs()); touch() }
     fun lap() { sw.lap(monotonicNowMs()); touch() }
     fun reset() { sw.reset(); touch() }
-    fun resetAndArm(forcedCs: List<Int>) { sw.resetAndArm(forcedCs); touch() }
+    fun resetAndArm(forcedCs: List<Int>, target: ForceTarget) { sw.resetAndArm(forcedCs, target); touch() }
 }

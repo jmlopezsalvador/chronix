@@ -41,6 +41,8 @@ data class ClockTheme(
     val tabs: List<ClockTab>,
     val selectedTab: Int,
     val decimal: String = ",",
+    /** Si el diseño muestra el tiempo total de cada vuelta (el iPhone solo muestra el tiempo de vuelta). */
+    val showsTotal: Boolean = true,
     val title: String = "Cronómetro",
     val lapLabel: String = "Vuelta",
     val startLabel: String = "Iniciar",
@@ -89,6 +91,7 @@ object ClockThemes {
         ),
         selectedTab = 2,
         startLabel = "Iniciar", stopLabel = "Parar", resetLabel = "Reiniciar", resumeLabel = "Iniciar",
+        showsTotal = false,
     )
 
     /** Google Pixel (Clock 8.1, Material 3 Expressive, tema oscuro). */

@@ -33,8 +33,9 @@ Herramienta para un **efecto de magia**: emula la app de reloj de un fabricante 
 Temporizador). En la fase 1 solo el **cronómetro** es funcional y realista; las otras pestañas no hacen nada.
 - 7 *look and feel* (Samsung, iPhone, Pixel, OnePlus, OPPO, Xiaomi, Huawei; referencias en `data/Visuales/` y `data/kit/`), elegibles en ajustes secretos.
 - **Ajustes secretos:** pulsación larga (1,5 s configurable) en la esquina superior derecha, zona invisible.
-- **Modo forzaje:** pulsación larga en *Restablecer* → vibración → las centésimas de las vueltas/pausas configuradas
-  se fuerzan a los valores guardados; al agotarlos, el cronómetro vuelve a ser normal. Nada debe ser visible.
+- **Modo forzaje:** pulsación larga en *Restablecer* → vibración → las centésimas del **tiempo de vuelta** (por defecto; opción
+  de forzar el total, con aviso si el diseño no lo muestra) se fuerzan a los valores guardados, siempre al alza; al agotarlos,
+  el cronómetro vuelve a ser normal. Nada debe ser visible.
 - Detalle y decisiones en `docs/SPEC.md` (fuente de verdad funcional).
 - **Código:** lógica pura en `shared/.../domain/Stopwatch.kt` (reloj inyectado, con tests); temas en `ui/ClockTheme.kt`;
   un composable por diseño en `ui/<Marca>Style.kt` (despacha `ui/StopwatchScreen.kt`); piezas comunes en `ui/Common.kt`,

@@ -7,12 +7,17 @@ enum class Phase { IDLE, RUNNING, PAUSED }
 
 enum class LapMark { NONE, BEST, WORST }
 
+/** Qué cifra de la vuelta lleva las centésimas forzadas: la del tiempo total o la del tiempo de vuelta. */
+enum class ForceTarget { TOTAL, LAP }
+
 /**
  * Cronómetro puro (sin UI ni reloj propio): todas las operaciones reciben `nowMs`, un instante monotónico en
  * milisegundos. Así es determinista y testeable, y no deriva (se calcula por diferencia, no por ticks).
  *
- * Incluye el **modo forzaje**: con él armado, la n-ésima vuelta fija las centésimas de su tiempo total
- * al valor configurado para n. El tiempo de vuelta se obtiene por diferencia, así la tabla siempre cuadra.
+ * Incluye el **modo forzaje**: con él armado, la n-ésima vuelta fija las centésimas de una de sus cifras
+ * ([ForceTarget.TOTAL] o [ForceTarget.LAP]) al valor configurado para n. La otra cifra se obtiene por diferencia
+ * o por suma, así la tabla siempre cuadra. El ajuste es siempre **al alza**: nunca se muestra un tiempo menor
+ * que el real; los segundos se quedan en los que estamos o pasan al siguiente.
  */
 class Stopwatch {
     var phase: Phase = Phase.IDLE
@@ -24,6 +29,7 @@ class Stopwatch {
     private var startedAt = 0L
     private var forced: List<Int> = emptyList()
     private var forcedIndex = 0
+    private var target = ForceTarget.TOTAL
 
     val running: Boolean get() = phase == Phase.RUNNING
 
@@ -53,12 +59,22 @@ class Stopwatch {
         if (!running) return
         val prev = laps.lastOrNull()?.totalCs ?: 0L
         val real = elapsedCs(nowMs)
-        val total = if (forcingArmed) {
-            forceTotal(real, prev, forced[forcedIndex]).also { forcedIndex++ }
+        val lapCs: Long
+        val total: Long
+        if (forcingArmed) {
+            val f = forced[forcedIndex++]
+            if (target == ForceTarget.LAP) {
+                lapCs = forceLap(real - prev, f)
+                total = prev + lapCs
+            } else {
+                total = forceTotal(real, prev, f)
+                lapCs = total - prev
+            }
         } else {
-            maxOf(real, prev + 1)
+            total = maxOf(real, prev + 1)
+            lapCs = total - prev
         }
-        laps = laps + Lap(laps.size + 1, total - prev, total)
+        laps = laps + Lap(laps.size + 1, lapCs, total)
     }
 
     /** Restablecer normal: a cero y sin forzaje. */
@@ -71,21 +87,34 @@ class Stopwatch {
     }
 
     /** Restablecer + armar el forzaje con la lista de centésimas (cada valor se limita a 0..99). */
-    fun resetAndArm(forcedCs: List<Int>) {
+    fun resetAndArm(forcedCs: List<Int>, target: ForceTarget = ForceTarget.TOTAL) {
         reset()
         forced = forcedCs.map { it.coerceIn(0, 99) }
+        this.target = target
     }
 
     companion object {
         /**
-         * Total forzado: el mayor valor <= `realCs` cuyas centésimas sean `f`. Si no supera el total anterior
-         * (`prevTotal`), sube de 1 en 1 segundo hasta superarlo, para que la vuelta nunca sea cero ni negativa.
+         * Total forzado: el menor valor **>= `realCs`** cuyas centésimas sean `f` (mismo segundo si las centésimas
+         * reales aún no han pasado de `f`; si ya las pasaron, el segundo siguiente). Nunca resta. Si no supera el
+         * total anterior (`prevTotal`), sube de 1 en 1 segundo hasta superarlo, para que la vuelta sea siempre > 0.
          */
         fun forceTotal(realCs: Long, prevTotal: Long, f: Int): Long {
             var t = (realCs / 100) * 100 + f
-            if (t > realCs) t -= 100
+            if (t < realCs) t += 100
             while (t <= prevTotal || t < 0) t += 100
             return t
+        }
+
+        /**
+         * Tiempo de vuelta forzado: el menor valor **>= `realLapCs`** con centésimas `f` y siempre positivo
+         * (si la vuelta real ya es <= 0 porque la anterior se adelantó, sale la primera duración positiva con `f`).
+         */
+        fun forceLap(realLapCs: Long, f: Int): Long {
+            var l = (realLapCs / 100) * 100 + f
+            if (l < realLapCs) l += 100
+            while (l <= 0) l += 100
+            return l
         }
     }
 }
