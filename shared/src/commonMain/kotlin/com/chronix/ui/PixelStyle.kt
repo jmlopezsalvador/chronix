@@ -77,14 +77,13 @@ fun PixelStopwatch(p: StopwatchScreenParams) {
             Spacer(Modifier.height(12.dp))
             PillBottomBar(t)
         }
-        SecretCorner(p, Modifier.align(Alignment.TopEnd))
     }
 }
 
 @Composable
 private fun Pill(label: String, bg: Color, color: Color, height: Int, modifier: Modifier) {
     Box(
-        Modifier.fillMaxWidth().height(height.dp).clip(RoundedCornerShape(if (height > 90) 36.dp else 50.dp)).background(bg).then(modifier),
+        Modifier.fillMaxWidth().height(height.dp).clip(RoundedCornerShape(if (height > 90) 36.dp else 50.dp)).background(bg).blocksSecret().then(modifier),
         contentAlignment = Alignment.Center,
     ) { Text(label, color = color, fontSize = 22.sp) }
 }

@@ -1,7 +1,11 @@
 package com.chronix.ui
 
 import android.app.Activity
+import android.content.ComponentName
 import android.content.Context
+import android.content.ContextWrapper
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -40,6 +44,40 @@ actual fun rememberVibrate(): () -> Unit {
             }
             vibrator?.vibrate(VibrationEffect.createOneShot(120L, VibrationEffect.DEFAULT_AMPLITUDE))
         }
+    }
+}
+
+@Composable
+actual fun rememberAppAppearance(): AppAppearance {
+    val context = LocalContext.current
+    return remember(context) { AndroidAppearance(context) }
+}
+
+/**
+ * Un `activity-alias` por icono x nombre (ver AndroidManifest.xml, generado por tools/gen_icons.py). Solo uno está
+ * habilitado a la vez. Al cambiarlo se relanza la app, que es lo que hace falta para que el lanzador lo refresque.
+ */
+private class AndroidAppearance(private val context: Context) : AppAppearance {
+    override val canChangeName = true
+    override val restartsApp = true
+
+    override fun apply(iconId: String, nameId: String) {
+        val pm = context.packageManager
+        val pkg = context.packageName
+        fun component(i: String, n: String) = ComponentName(pkg, "$pkg.Alias_${i}_$n")
+        val target = component(iconId, nameId)
+        // Primero se habilita el nuevo y luego se deshabilitan los demás, para no quedarse sin icono en el lanzador
+        pm.setComponentEnabledSetting(target, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP)
+        for (icon in AppIconCatalog.icons) for (name in AppIconCatalog.names) {
+            val c = component(icon.id, name.id)
+            if (c != target) pm.setComponentEnabledSetting(c, PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP)
+        }
+        // Reinicio: se cierra la tarea y se vuelve a abrir por el alias que quedó habilitado
+        val launch = pm.getLaunchIntentForPackage(pkg)?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        var ctx = context
+        while (ctx is ContextWrapper && ctx !is Activity) ctx = ctx.baseContext
+        (ctx as? Activity)?.finishAffinity()
+        if (launch != null) context.startActivity(launch)
     }
 }
 

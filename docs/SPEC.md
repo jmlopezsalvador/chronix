@@ -36,7 +36,7 @@ centésimas** de las vueltas y de la parada a valores preparados de antemano.
 - R14. La arquitectura debe separar la **lógica** del cronómetro de la **presentación**, para añadir temas sin tocar la lógica.
 
 ## 5. Ajustes secretos
-- R15. Acceso: **pulsación larga en la esquina superior derecha** (zona invisible). Duración por defecto **1,5 s**, configurable. La zona mide 120 dp de ancho y llega desde el borde superior de la pantalla hasta 120 dp por debajo de la barra de estado; es igual en todos los diseños y funciona con el cronómetro parado, en marcha o en pausa. (En Android la propia barra de estado no entrega toques a la app.)
+- R15. **Acceso:** pulsación larga en **cualquier zona vacía de la pantalla**, es decir, que no sea un control (botones, barra de pestañas). Ya no hay botón invisible en la esquina. Duración por defecto **1,5 s**, configurable (0,5 a 5 s). Si el dedo se mueve o se usan dos dedos, se cancela, así que deslizar (pager, listas) no la activa. Funciona con el cronómetro parado, en marcha o en pausa y es igual en todos los diseños. Los controles se marcan con `blocksSecret()`; el detector va en la raíz (`secretAccess`).
 - R16. Contenido (fase 1; las cajas de centésimas son de texto numérico normal, se pueden borrar y el teclado se cierra al tocar fuera):
   - Elegir el look and feel.
   - Duración de la pulsación larga de acceso.
@@ -57,8 +57,17 @@ centésimas** de las vueltas y de la parada a valores preparados de antemano.
 - R22. Nada del forzaje debe ser visible ni detectable: sin textos, sin indicadores.
 - R22b. La lista de ajustes viene por defecto con **4** posiciones (valor 00) y se puede ampliar **sin límite**.
 
+## 6b. Icono y nombre de la app, guía, instrucciones y créditos
+- R23. **Icono de la aplicación** (ajustes, apartado desplegable): lista de los 20 iconos de `data/icons` con miniatura y nombre. Por defecto, **Google / Android**. Al elegir otro sale un **modal de confirmación** (Cancelar / Aplicar). Android: un `activity-alias` por icono × nombre (80), solo uno habilitado; al aplicar se reinicia la app. iOS: icono alternativo (`AppIcon-<id>`); el propio iOS enseña un aviso del sistema y no se reinicia.
+- R24. **Nombre de la aplicación** (ajustes, desplegable, solo Android): *Chronix* (por defecto), *Reloj*, *Clock*, *Cronómetro*. Mismo modal de confirmación y reinicio. iOS no permite cambiar el nombre en ejecución, así que ahí no aparece.
+- R25. Los iconos y los alias se regeneran con `python tools/gen_icons.py` (lee `data/icons/PNG`).
+- R26. **Guía de inicio:** ventana de varias páginas (qué es, cómo se usa, cómo abrir los ajustes, el forzaje, y un cierre) que sale al abrir la app mientras esté activa. Activa por defecto al instalar. En la última página: *No volver a mostrar* o *Cerrar*.
+- R27. Ajuste **«Ocultar guía de inicio»** y botón **«Ver guía»**. Si la guía sigue activa al entrar en los ajustes, sale un modal que recomienda desactivarla (*Desactivar guía* / *Ahora no*).
+- R28. Pantalla **Instrucciones** (botón en los ajustes): descripción orientada al usuario de para qué sirve la app, el objetivo del efecto, el forzaje paso a paso, cómo abrir los ajustes y cada ajuste. Debe mantenerse al día cuando cambie una función o un ajuste.
+- R29. Pie de los ajustes (y de las instrucciones): **«Desarrollado por WikiCode, Adri & Semi 2026»**.
+
 ## 7. Datos locales
-- Ajustes secretos (tema, duración de pulsación, lista de centésimas) en SharedPreferences / UserDefaults.
+- Ajustes secretos (tema, duración de pulsación, lista de centésimas, forzar en vuelta/total, icono, nombre, guía de inicio) en SharedPreferences / UserDefaults.
 
 ## 8. Decisiones tomadas (resueltas con el usuario, 2026-11-16)
 - Se fuerzan las centésimas de cada **vuelta** (tiempo total), no las de la pausa. El tiempo de vuelta sale por diferencia.

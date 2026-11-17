@@ -32,7 +32,9 @@ El usuario habla español: responde y comenta el código en español.
 Herramienta para un **efecto de magia**: emula la app de reloj de un fabricante (Alarma, Reloj mundial, Cronómetro,
 Temporizador). En la fase 1 solo el **cronómetro** es funcional y realista; las otras pestañas no hacen nada.
 - 7 *look and feel* (Samsung, iPhone, Pixel, OnePlus, OPPO, Xiaomi, Huawei; referencias en `data/Visuales/` y `data/kit/`), elegibles en ajustes secretos.
-- **Ajustes secretos:** pulsación larga (1,5 s configurable) en la esquina superior derecha, zona invisible.
+- **Ajustes secretos:** pulsación larga (1,5 s configurable) en cualquier zona vacía de la pantalla (no sobre controles; ver
+  `secretAccess`/`blocksSecret` en `ui/Gestures.kt`). Incluyen icono y nombre de la app (modal de confirmación; en Android
+  reinicia), guía de inicio, pantalla de Instrucciones y créditos.
 - **Modo forzaje:** pulsación larga en *Restablecer* → vibración → las centésimas del **tiempo de vuelta** (por defecto; opción
   de forzar el total, con aviso si el diseño no lo muestra) se fuerzan a los valores guardados, siempre al alza; al agotarlos,
   el cronómetro vuelve a ser normal. Nada debe ser visible.
@@ -40,6 +42,8 @@ Temporizador). En la fase 1 solo el **cronómetro** es funcional y realista; las
 - **Código:** lógica pura en `shared/.../domain/Stopwatch.kt` (reloj inyectado, con tests); temas en `ui/ClockTheme.kt`;
   un composable por diseño en `ui/<Marca>Style.kt` (despacha `ui/StopwatchScreen.kt`); piezas comunes en `ui/Common.kt`,
   `Icons.kt`, `Dials.kt`, `Widgets.kt`. Para otro fabricante: nuevo `ClockTheme` + `ClockStyle` + su `<Marca>Style.kt`.
+- **Iconos:** 20 iconos de `data/icons`; `python tools/gen_icons.py` regenera alias de Android (`AndroidManifest.xml`), iconos de iOS
+  (`Assets.xcassets/AppIcon-<id>`) y `ui/AppIconCatalog.kt`. Si se añade/cambia un control pulsable, marcarlo con `blocksSecret()`.
 - **Estado (fase 1):** cronómetro en 7 diseños + forzaje + ajustes secretos. Probado en el emulador Android (los 7 diseños, forzaje en Samsung y OnePlus); falta probarlo en un móvil real (vibración). iOS sin compilar aún (la háptica `UIImpactFeedbackGenerator` y los gestos son lo más arriesgado).
 
 ## Reglas de código para que compile en iOS
@@ -75,5 +79,6 @@ Temporizador). En la fase 1 solo el **cronómetro** es funcional y realista; las
 - En iOS, `UIDevice.proximityState` se lee por sondeo; apagar y reactivar la monitorización deja el estado pegado. Mantenerla activa.
 - Barra de estado e indicador de inicio se ocultan desde SwiftUI (`ContentView.swift`); el bloqueo automático con `idleTimerDisabled`.
 
-## Instrucciones para el usuario (si la app las necesita)
-Si la app lleva una página de «Instrucciones» de cara al usuario final, mantenerla al día en la misma tarea en que se cambie la función.
+## Instrucciones para el usuario
+La app tiene una pantalla de «Instrucciones» (`ui/InstructionsScreen.kt`) y una guía de inicio (`ui/GuideDialog.kt`). Mantenerlas
+al día en la misma tarea en que se cambie una función o un ajuste.

@@ -31,7 +31,7 @@ fun RoundButton(
 ) {
     var m = Modifier.size(size)
     if (elevation > 0.dp) m = m.shadow(elevation, CircleShape)
-    m = m.clip(CircleShape).background(bg)
+    m = m.clip(CircleShape).background(bg).blocksSecret()
     if (border != null) m = m.border(2.dp, border, CircleShape)
     Box(m.then(modifier), contentAlignment = Alignment.Center, content = content)
 }

@@ -1,0 +1,25 @@
+﻿KIT DE ICONOS DE APPS DE RELOJ PARA MÓVIL
+Recopilado el 17 de noviembre de 2026.
+20 entradas, con nombres de marca/sistema y variantes identificadas.
+
+CONTENIDO
+PNG/: iconos individuales con nombres claros, p. ej. Apple-iOS-Reloj.png o Samsung-OneUI-Reloj-anterior.png.
+originales/: archivos fuente sin modificar.
+VISTA-PREVIA.png: lámina con los 20 iconos y sus nombres.
+CATALOGO.html: catálogo local con buscador, descargas y enlaces a la fuente. Extrae el ZIP antes de abrirlo.
+INDICE-NOMBRES.txt: listado de marcas, nombres de archivo, resoluciones y fuentes.
+FUENTES.csv / FUENTES.json: metadatos y huellas SHA-256 de los originales.
+
+COBERTURA
+Apple iOS, Google Android, Samsung One UI, Xiaomi MIUI/HyperOS, OPPO/Realme ColorOS, OnePlus OxygenOS, Huawei EMUI, Honor MagicOS, vivo, ASUS ZenUI, Sony Xperia, HTC Sense, Meizu Flyme y Transsion (familia Tecno/Infinix).
+También se incluyen diseños anteriores de Google, Samsung, OnePlus y Sony y los iconos originales de Android AOSP KitKat y Gingerbread.
+
+PRECISIÓN
+Se recopilan imágenes de fichas oficiales de Google Play, App Store, Galaxy Store, del archivo APKMirror y del código fuente de Android AOSP. No se han redibujado ni generado iconos.
+Los recursos de archivo se identifican como tales. Una ficha puede conservar un icono antiguo incluso al mostrar una versión reciente de la app: no se garantiza que cada icono corresponda al último firmware.
+No es un inventario exhaustivo de modelos, regiones, temas o versiones. Las familias de marcas no implican que todos sus teléfonos compartan exactamente el mismo icono.
+Las imágenes son estáticas. Los iconos de reloj que muestran la hora en vivo no conservan ese comportamiento en un archivo PNG.
+Los PNG mantienen la resolución real de las fuentes, de 72 a 512 px según el recurso. No se han ampliado para aparentar más detalle. Solo la lámina adapta el tamaño para comparar.
+Se conserva la transparencia cuando existe. Los originales JPEG u otros archivos opacos siguen siendo opacos; la conversión a PNG no añade transparencia ni detalle.
+Los nombres están en los archivos y en la lámina; los iconos individuales se conservan sin rótulos superpuestos.
+Los iconos y marcas pertenecen a sus respectivos titulares. La recopilación no concede licencias de reutilización comercial.

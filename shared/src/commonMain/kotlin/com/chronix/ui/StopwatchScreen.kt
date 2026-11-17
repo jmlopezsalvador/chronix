@@ -4,17 +4,15 @@ import androidx.compose.runtime.Composable
 
 /**
  * Pantalla del cronómetro: elige el diseño según el look and feel. Todos son una réplica del reloj real
- * y ninguno muestra nada del forzaje. [onSecret] se dispara con la pulsación larga en la esquina superior derecha.
+ * y ninguno muestra nada del forzaje. El acceso a los ajustes (pulsación larga en zona vacía) lo gestiona la raíz.
  */
 @Composable
 fun StopwatchScreen(
     state: StopwatchState,
     theme: ClockTheme,
-    secretHoldMs: Long,
-    onSecret: () -> Unit,
     onArmForcing: () -> Unit,
 ) {
-    val p = StopwatchScreenParams(state, theme, secretHoldMs, onSecret, onArmForcing)
+    val p = StopwatchScreenParams(state, theme, onArmForcing)
     TickEffect(state)
     when (theme.style) {
         ClockStyle.SAMSUNG -> SamsungStopwatch(p)

@@ -36,8 +36,6 @@ const val ARM_HOLD_MS = 800L
 class StopwatchScreenParams(
     val state: StopwatchState,
     val theme: ClockTheme,
-    val secretHoldMs: Long,
-    val onSecret: () -> Unit,
     val onArmForcing: () -> Unit,
 ) {
     val sw get() = state.sw
@@ -64,32 +62,18 @@ fun TickEffect(state: StopwatchState) {
 }
 
 /**
- * Zona invisible en la esquina superior derecha: pulsación larga → ajustes secretos.
- * Empieza en el borde superior de la pantalla (cubre también la altura de la barra de estado, donde la gente
- * suele pulsar «la esquina») y baja 120 dp por debajo de ella; 120 dp de ancho.
- */
-@Composable
-fun SecretCorner(p: StopwatchScreenParams, modifier: Modifier = Modifier) {
-    val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-    Box(
-        modifier.width(120.dp).height(top + 120.dp)
-            .pressAndHold(p.secretHoldMs, onHold = p.onSecret),
-    )
-}
-
-/**
  * Gesto del botón de reinicio: pulsación corta = restablecer; larga = restablecer + armar el forzaje (vibra).
  * Igual en todos los diseños.
  */
 @Composable
 fun Modifier.resetGesture(p: StopwatchScreenParams): Modifier =
-    pressAndHold(ARM_HOLD_MS, onHold = p.onArmForcing, onTap = { p.state.reset() })
+    blocksSecret().pressAndHold(ARM_HOLD_MS, onHold = p.onArmForcing, onTap = { p.state.reset() })
 
 /** Barra inferior plana: icono + etiqueta. Las pestañas no hacen nada en la fase 1. */
 @Composable
 fun FlatBottomBar(theme: ClockTheme, labelSize: Int = 11, boldSelected: Boolean = false, filledSelected: Boolean = true) {
     Row(
-        Modifier.fillMaxWidth().background(theme.navBg).padding(top = 8.dp, bottom = 10.dp),
+        Modifier.fillMaxWidth().background(theme.navBg).blocksSecret().padding(top = 8.dp, bottom = 10.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
         theme.tabs.forEachIndexed { i, tab ->
@@ -111,7 +95,7 @@ fun FlatBottomBar(theme: ClockTheme, labelSize: Int = 11, boldSelected: Boolean 
 @Composable
 fun PillBottomBar(theme: ClockTheme) {
     Row(
-        Modifier.fillMaxWidth().background(theme.navBg).padding(top = 12.dp, bottom = 14.dp),
+        Modifier.fillMaxWidth().background(theme.navBg).blocksSecret().padding(top = 12.dp, bottom = 14.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
         theme.tabs.forEachIndexed { i, tab ->

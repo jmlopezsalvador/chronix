@@ -1,0 +1,103 @@
+﻿KIT DE ICONOS DE RELOJ MÓVIL · ÍNDICE DE NOMBRES
+Recopilado el 17/11/2026.
+
+01. Apple · iOS
+    Archivo: PNG/Apple-iOS-Reloj.png
+    Resolución real: 512 x 512 px
+    Fuente: https://apps.apple.com/es/app/clock/id1584215688?uo=4
+
+02. Google / Android
+    Archivo: PNG/Google-Android-Reloj.png
+    Resolución real: 512 x 512 px
+    Fuente: https://play.google.com/store/apps/details?id=com.google.android.deskclock&hl=es
+
+03. Samsung · One UI
+    Archivo: PNG/Samsung-OneUI-Reloj.png
+    Resolución real: 512 x 512 px
+    Fuente: https://galaxystore.samsung.com/detail/com.sec.android.app.clockpackage
+
+04. Xiaomi · MIUI / HyperOS
+    Archivo: PNG/Xiaomi-MIUI-HyperOS-Reloj.png
+    Resolución real: 156 x 156 px
+    Fuente: https://www.apkmirror.com/apk/xiaomi-inc/miui-clock/
+
+05. OPPO / Realme · ColorOS
+    Archivo: PNG/OPPO-Realme-ColorOS-Reloj.png
+    Resolución real: 312 x 312 px
+    Fuente: https://www.apkmirror.com/apk/coloros/oppo-clock/
+
+06. OnePlus · OxygenOS
+    Archivo: PNG/OnePlus-OxygenOS-Reloj.png
+    Resolución real: 312 x 312 px
+    Fuente: https://www.apkmirror.com/apk/oneplus-ltd/oneplus-clock/
+
+07. Huawei · EMUI
+    Archivo: PNG/Huawei-EMUI-Reloj.png
+    Resolución real: 256 x 256 px
+    Fuente: https://www.apkmirror.com/apk/huawei/huawei-clock/
+
+08. Honor · MagicOS
+    Archivo: PNG/Honor-MagicOS-Reloj.png
+    Resolución real: 256 x 256 px
+    Fuente: https://www.apkmirror.com/apk/honor/clock-33/
+
+09. vivo · Reloj
+    Archivo: PNG/vivo-Reloj.png
+    Resolución real: 204 x 204 px
+    Fuente: https://www.apkmirror.com/apk/vivoglobal/vivo-clock/
+
+10. ASUS · ZenUI
+    Archivo: PNG/ASUS-ZenUI-Reloj.png
+    Resolución real: 512 x 512 px
+    Fuente: https://play.google.com/store/apps/details?id=com.asus.deskclock&hl=es
+
+11. Sony · Xperia clásico
+    Archivo: PNG/Sony-Xperia-Reloj-clasico.png
+    Resolución real: 144 x 144 px
+    Fuente: https://www.apkmirror.com/apk/sony-mobile-communications/sony-clock/
+
+12. HTC · Sense
+    Archivo: PNG/HTC-Sense-Reloj.png
+    Resolución real: 512 x 512 px
+    Fuente: https://www.apkmirror.com/apk/htc-corporation/clock-htc-corporation/
+
+13. Meizu · Flyme
+    Archivo: PNG/Meizu-Flyme-Reloj.png
+    Resolución real: 143 x 143 px
+    Fuente: https://www.apkmirror.com/apk/meizu/clock-3/
+
+14. Transsion · Tecno / Infinix
+    Archivo: PNG/Transsion-Tecno-Infinix-Reloj.png
+    Resolución real: 512 x 512 px
+    Fuente: https://www.apkmirror.com/apk/transsion-holdings/clock-22/
+
+15. Google / Android · anterior
+    Archivo: PNG/Google-Android-Reloj-anterior.png
+    Resolución real: 512 x 512 px
+    Fuente: https://www.apkmirror.com/apk/google-inc/clock/clock-7-0-release/
+
+16. Samsung · diseño anterior
+    Archivo: PNG/Samsung-OneUI-Reloj-anterior.png
+    Resolución real: 512 x 512 px
+    Fuente: https://www.apkmirror.com/apk/samsung-electronics-co-ltd/samsung-clock/samsung-clock-12-3-30-35-release/
+
+17. OnePlus · diseño anterior
+    Archivo: PNG/OnePlus-OxygenOS-Reloj-anterior.png
+    Resolución real: 192 x 192 px
+    Fuente: https://www.apkmirror.com/apk/oneplus-ltd/oneplus-clock/oneplus-clock-5-3-0-release/
+
+18. Sony · Xperia, variante
+    Archivo: PNG/Sony-Xperia-Reloj-variante.png
+    Resolución real: 192 x 192 px
+    Fuente: https://www.apkmirror.com/apk/sony-mobile-communications/sony-clock/sony-clock-20-2-a-2-49-release/
+
+19. Android AOSP · KitKat
+    Archivo: PNG/Android-AOSP-KitKat-Reloj.png
+    Resolución real: 192 x 192 px
+    Fuente: https://android.googlesource.com/platform/packages/apps/DeskClock/+/android-4.4.4_r2/res/mipmap-xxxhdpi/ic_launcher_alarmclock.png
+
+20. Android AOSP · Gingerbread
+    Archivo: PNG/Android-AOSP-Gingerbread-Reloj.png
+    Resolución real: 72 x 72 px
+    Fuente: https://android.googlesource.com/platform/packages/apps/DeskClock/+/android-2.3.7_r1/res/drawable-hdpi/ic_launcher_alarmclock.png
+

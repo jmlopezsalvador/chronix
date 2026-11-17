@@ -41,6 +41,28 @@ class SettingsStoreTest {
         assertEquals(ForceTarget.LAP, store.load().forceTarget)
     }
 
+    @Test fun guideIsActiveByDefaultAndIconNameSurviveRoundTrip() {
+        val store = SettingsStore(MemoryStore())
+        val d = store.load()
+        assertEquals(true, d.showGuide)
+        assertEquals("google", d.iconId)
+        assertEquals("chronix", d.nameId)
+        store.save(AppSettings(showGuide = false, iconId = "samsung", nameId = "reloj"))
+        val s = store.load()
+        assertEquals(false, s.showGuide)
+        assertEquals("samsung", s.iconId)
+        assertEquals("reloj", s.nameId)
+    }
+
+    @Test fun unknownIconOrNameFallsBackToDefault() {
+        val mem = MemoryStore()
+        mem.putString("iconId", "no_existe")
+        mem.putString("nameId", "tampoco")
+        val s = SettingsStore(mem).load()
+        assertEquals("google", s.iconId)
+        assertEquals("chronix", s.nameId)
+    }
+
     @Test fun emptyForcedListSurvivesRoundTrip() {
         val store = SettingsStore(MemoryStore())
         store.save(AppSettings(forcedCs = emptyList()))

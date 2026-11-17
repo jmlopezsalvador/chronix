@@ -91,7 +91,7 @@ fun OppoStopwatch(p: StopwatchScreenParams) {
                 Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
                     if (phase != Phase.IDLE) {
                         Box(
-                            if (phase == Phase.RUNNING) Modifier.size(64.dp).clickable { state.lap() } else Modifier.size(64.dp),
+                            if (phase == Phase.RUNNING) Modifier.size(64.dp).blocksSecret().clickable { state.lap() } else Modifier.size(64.dp),
                             contentAlignment = Alignment.Center,
                         ) { IconView(IconKind.FLAG, if (phase == Phase.RUNNING) t.text else Color(0xFFB9B9BE), 28.dp) }
                     }
@@ -99,6 +99,5 @@ fun OppoStopwatch(p: StopwatchScreenParams) {
             }
             FlatBottomBar(t, labelSize = 12, boldSelected = true, filledSelected = true)
         }
-        SecretCorner(p, Modifier.align(Alignment.TopEnd))
     }
 }

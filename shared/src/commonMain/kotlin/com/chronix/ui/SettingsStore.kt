@@ -22,6 +22,12 @@ data class AppSettings(
     val forcedCs: List<Int> = listOf(0, 0, 0, 0),
     /** Dónde se fuerzan las centésimas: en el tiempo de vuelta (por defecto) o en el tiempo total. */
     val forceTarget: ForceTarget = ForceTarget.LAP,
+    /** Icono de la app (id de [AppIconCatalog.icons]). Solo cambia al confirmarlo en el modal. */
+    val iconId: String = AppIconCatalog.DEFAULT_ICON,
+    /** Nombre de la app (id de [AppIconCatalog.names]). Solo Android. */
+    val nameId: String = AppIconCatalog.DEFAULT_NAME,
+    /** Mostrar la guía de inicio al abrir la app. Activa al instalar; se puede desactivar al final de la guía o en ajustes. */
+    val showGuide: Boolean = true,
 )
 
 class SettingsStore(private val prefs: KeyValueStore) {
@@ -35,6 +41,9 @@ class SettingsStore(private val prefs: KeyValueStore) {
             secretHoldMs = prefs.getLong("secretHoldMs", d.secretHoldMs).coerceIn(300L, 10_000L),
             forcedCs = forced,
             forceTarget = if (prefs.getString("forceTarget") == "TOTAL") ForceTarget.TOTAL else ForceTarget.LAP,
+            iconId = prefs.getString("iconId")?.takeIf { id -> AppIconCatalog.icons.any { it.id == id } } ?: d.iconId,
+            nameId = prefs.getString("nameId")?.takeIf { id -> AppIconCatalog.names.any { it.id == id } } ?: d.nameId,
+            showGuide = prefs.getBoolean("showGuide", d.showGuide),
         )
     }
 
@@ -43,5 +52,8 @@ class SettingsStore(private val prefs: KeyValueStore) {
         prefs.putLong("secretHoldMs", s.secretHoldMs)
         prefs.putString("forcedCs", s.forcedCs.joinToString(","))
         prefs.putString("forceTarget", s.forceTarget.name)
+        prefs.putString("iconId", s.iconId)
+        prefs.putString("nameId", s.nameId)
+        prefs.putBoolean("showGuide", s.showGuide)
     }
 }

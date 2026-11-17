@@ -75,6 +75,5 @@ fun HuaweiStopwatch(p: StopwatchScreenParams) {
             }
             FlatBottomBar(t, labelSize = 11, boldSelected = false)
         }
-        SecretCorner(p, Modifier.align(Alignment.TopEnd))
     }
 }

@@ -63,7 +63,6 @@ fun XiaomiStopwatch(p: StopwatchScreenParams) {
             }
             FlatBottomBar(t, labelSize = 11, boldSelected = true)
         }
-        SecretCorner(p, Modifier.align(Alignment.TopEnd))
     }
 }
 

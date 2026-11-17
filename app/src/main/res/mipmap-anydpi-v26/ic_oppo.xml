@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_plate" />
+    <foreground>
+        <inset android:drawable="@drawable/icon_oppo" android:inset="17%" />
+    </foreground>
+</adaptive-icon>

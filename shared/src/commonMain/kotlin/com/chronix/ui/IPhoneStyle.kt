@@ -78,7 +78,6 @@ fun IPhoneStopwatch(p: StopwatchScreenParams) {
             }
             FlatBottomBar(t, labelSize = 10)
         }
-        SecretCorner(p, Modifier.align(Alignment.TopEnd))
     }
 }
 

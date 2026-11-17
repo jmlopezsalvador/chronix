@@ -92,7 +92,6 @@ fun SamsungStopwatch(p: StopwatchScreenParams) {
             SamsungNav(t)
             Spacer(Modifier.height(20.dp))
         }
-        SecretCorner(p, Modifier.align(Alignment.TopEnd))
     }
 }
 
@@ -181,7 +180,7 @@ private fun LapRow(a: String, b: String, c: String, color: Color, header: Boolea
 private fun SamsungNav(t: ClockTheme) {
     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
         Row(
-            Modifier.clip(RoundedCornerShape(50)).background(t.navBg).padding(6.dp),
+            Modifier.clip(RoundedCornerShape(50)).background(t.navBg).blocksSecret().padding(6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             t.tabs.forEachIndexed { i, tab ->

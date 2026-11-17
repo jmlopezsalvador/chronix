@@ -81,7 +81,7 @@ fun OnePlusStopwatch(p: StopwatchScreenParams) {
                 }
                 Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
                     when (phase) {
-                        Phase.RUNNING -> Box(Modifier.size(64.dp).clickable { state.lap() }, contentAlignment = Alignment.Center) {
+                        Phase.RUNNING -> Box(Modifier.size(64.dp).blocksSecret().clickable { state.lap() }, contentAlignment = Alignment.Center) {
                             IconView(IconKind.FLAG, t.text, 28.dp)
                         }
                         Phase.PAUSED -> IconView(IconKind.SHARE, t.text, 26.dp)
@@ -91,6 +91,5 @@ fun OnePlusStopwatch(p: StopwatchScreenParams) {
             }
             FlatBottomBar(t, labelSize = 11, boldSelected = true, filledSelected = true)
         }
-        SecretCorner(p, Modifier.align(Alignment.TopEnd))
     }
 }

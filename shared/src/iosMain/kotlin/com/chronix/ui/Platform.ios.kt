@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSUserDefaults
+import platform.UIKit.UIApplication
 import platform.UIKit.UIImpactFeedbackGenerator
 import platform.UIKit.UIImpactFeedbackStyle
 
@@ -19,6 +20,26 @@ actual fun rememberVibrate(): () -> Unit = remember {
         val generator = UIImpactFeedbackGenerator(style = UIImpactFeedbackStyle.UIImpactFeedbackStyleHeavy)
         generator.prepare()
         generator.impactOccurred()
+    }
+}
+
+@Composable
+actual fun rememberAppAppearance(): AppAppearance = remember { IosAppearance() }
+
+/**
+ * iOS solo permite cambiar el icono (los iconos alternativos están en Assets.xcassets como `AppIcon-<id>`, generados por
+ * tools/gen_icons.py), y siempre con su propio aviso del sistema. El nombre no se puede cambiar en ejecución.
+ */
+private class IosAppearance : AppAppearance {
+    override val canChangeName = false
+    override val restartsApp = false
+
+    override fun apply(iconId: String, nameId: String) {
+        val app = UIApplication.sharedApplication
+        if (!app.supportsAlternateIcons) return
+        // El icono por defecto es el principal («AppIcon»): se vuelve a él con nil
+        val name = if (iconId == AppIconCatalog.DEFAULT_ICON) null else "AppIcon-$iconId"
+        app.setAlternateIconName(name, completionHandler = null)
     }
 }
 
