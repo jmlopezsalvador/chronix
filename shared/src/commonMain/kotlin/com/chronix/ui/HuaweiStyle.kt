@@ -52,8 +52,12 @@ fun HuaweiStopwatch(p: StopwatchScreenParams) {
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(pad2(lap.number), style = digits(19, t.text, align = TextAlign.Start), modifier = Modifier.weight(0.6f))
-                        Text("+" + formatCs(lap.lapCs, d), style = digits(17, t.textSecondary), modifier = Modifier.weight(1.3f))
-                        Text(formatCs(lap.totalCs, d), style = digits(19, t.text, FontWeight.Medium, TextAlign.End), modifier = Modifier.weight(1f))
+                        if (p.showTotals) {
+                            Text("+" + formatCs(lap.lapCs, d), style = digits(17, t.textSecondary), modifier = Modifier.weight(1.3f))
+                            Text(formatCs(lap.totalCs, d), style = digits(19, t.text, FontWeight.Medium, TextAlign.End), modifier = Modifier.weight(1f))
+                        } else {
+                            Text(formatCs(lap.lapCs, d), style = digits(19, t.text, FontWeight.Medium, TextAlign.End), modifier = Modifier.weight(2.3f))
+                        }
                     }
                 }
             }

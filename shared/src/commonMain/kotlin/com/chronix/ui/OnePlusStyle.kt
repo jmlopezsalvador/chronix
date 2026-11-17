@@ -58,14 +58,14 @@ fun OnePlusStopwatch(p: StopwatchScreenParams) {
             Row(Modifier.fillMaxWidth().padding(horizontal = 30.dp)) {
                 Spacer(Modifier.width(34.dp))
                 Text(t.headerLapTime, style = digits(13, t.textSecondary, align = TextAlign.Start), modifier = Modifier.weight(1f))
-                Text(t.headerTotal, style = digits(13, t.textSecondary, align = TextAlign.End))
+                if (p.showTotals) Text(t.headerTotal, style = digits(13, t.textSecondary, align = TextAlign.End))
             }
             LazyColumn(state = rememberLapListState(p.laps.size), modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 30.dp).padding(top = 8.dp)) {
                 items(laps.asReversed(), key = { it.number }) { lap ->
                     Row(Modifier.fillMaxWidth().padding(vertical = 11.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text(pad2(lap.number), style = digits(12, t.textSecondary, align = TextAlign.Start), modifier = Modifier.width(34.dp))
                         Text(listTime(lap.lapCs, d), style = digits(18, p.lapColor(lap, t.text), align = TextAlign.Start), modifier = Modifier.weight(1f))
-                        Text(listTime(lap.totalCs, d), style = digits(18, t.text, align = TextAlign.End))
+                        if (p.showTotals) Text(listTime(lap.totalCs, d), style = digits(18, t.text, align = TextAlign.End))
                     }
                 }
             }

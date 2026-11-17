@@ -40,8 +40,9 @@ fun ChronixRoot(store: SettingsStore) {
                     StopwatchScreen(
                         state = stopwatch,
                         theme = theme,
+                        showTotals = settings.totalsVisible(),
                         onArmForcing = {
-                            stopwatch.resetAndArm(settings.forcedCs, settings.forceTarget)
+                            stopwatch.resetAndArm(settings.forcePlan())
                             vibrate()
                         },
                     )

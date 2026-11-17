@@ -1,6 +1,9 @@
 package com.chronix
 
+import com.chronix.domain.ForceMode
+import com.chronix.domain.ForcePlan
 import com.chronix.domain.ForceTarget
+import com.chronix.domain.StopSubmode
 import com.chronix.domain.Lap
 import com.chronix.domain.LapMark
 import com.chronix.domain.Phase
@@ -145,6 +148,93 @@ class StopwatchTest {
         assertTrue(sw.laps.all { it.lapCs > 0 })
         assertEquals(90, sw.laps[0].totalCs % 100)
         assertEquals(10, sw.laps[1].totalCs % 100)
+    }
+
+    // ---- Modo cronómetro: el forzaje actúa al parar (una vez), no en las vueltas
+
+    @Test fun stopModeCentisForcesTheBigCounterOnStop() {
+        val sw = Stopwatch()
+        sw.resetAndArm(ForcePlan(ForceMode.STOPWATCH, stopSubmode = StopSubmode.CENTIS, stopCentis = 45))
+        sw.start(0)
+        sw.stop(5_480) // real 5,48: las centésimas 45 ya pasaron -> 6,45 (los segundos nunca retroceden, nunca 5,45)
+        assertEquals(645, sw.elapsedCs(99_999))
+        assertEquals(Phase.PAUSED, sw.phase)
+        assertFalse(sw.forcingArmed)
+    }
+
+    @Test fun stopModeCentisStaysInSameSecondWhenNotPassed() {
+        val sw = Stopwatch()
+        sw.resetAndArm(ForcePlan(ForceMode.STOPWATCH, stopCentis = 90))
+        sw.start(0)
+        sw.stop(5_480)
+        assertEquals(590, sw.elapsedCs(0))
+    }
+
+    @Test fun stopModeDoesNotForceLaps() {
+        val sw = Stopwatch()
+        sw.resetAndArm(ForcePlan(ForceMode.STOPWATCH, stopCentis = 45))
+        sw.start(0)
+        sw.lap(1_230)
+        sw.lap(2_870)
+        assertEquals(listOf(123L, 287L), sw.laps.map { it.totalCs })
+        assertTrue(sw.forcingArmed) // sigue armado hasta que se pare
+    }
+
+    @Test fun stopModeFullCounterForcesMinutesSecondsAndCentis() {
+        val sw = Stopwatch()
+        // 01:10,34 = 1 min 10 s 34 cs = 7034 cs
+        sw.resetAndArm(ForcePlan(ForceMode.STOPWATCH, stopSubmode = StopSubmode.FULL, stopFullCs = 7_034L))
+        sw.start(0)
+        sw.stop(65_000) // real 1:05,00 -> exactamente 01:10,34
+        assertEquals(7_034, sw.elapsedCs(0))
+        assertEquals("01:10,34", formatCs(sw.elapsedCs(0)))
+    }
+
+    @Test fun stopModeFullCounterSubstitutesAsIsEvenWhenGoingBackwards() {
+        val sw = Stopwatch()
+        // Se fuerzan los tres (minutos, segundos y centésimas): se sustituye tal cual aunque el real ya haya pasado
+        sw.resetAndArm(ForcePlan(ForceMode.STOPWATCH, stopSubmode = StopSubmode.FULL, stopFullCs = 510L))
+        sw.start(0)
+        sw.stop(8_000) // real 8,00; configurado 00:05,10 -> 00:05,10
+        assertEquals(510, sw.elapsedCs(0))
+        assertEquals("00:05,10", formatCs(sw.elapsedCs(0)))
+    }
+
+    @Test fun stopModeKeepsTheActiveLapConsistentWithLapsAndCounter() {
+        val sw = Stopwatch()
+        sw.resetAndArm(ForcePlan(ForceMode.STOPWATCH, stopSubmode = StopSubmode.FULL, stopFullCs = 1_234L))
+        sw.start(0)
+        sw.lap(3_000)
+        sw.lap(5_000)
+        sw.stop(9_000) // el contador queda en 12,34
+        val counter = sw.elapsedCs(0)
+        assertEquals(1_234, counter)
+        // vuelta en curso = contador - suma de las vueltas hechas
+        assertEquals(counter - sw.laps.sumOf { it.lapCs }, sw.currentLapCs(0))
+        assertEquals(1_234 - 500, sw.currentLapCs(0))
+    }
+
+    @Test fun stopModeAppliesOnlyToTheFirstStopAndTheCounterKeepsRunningOnTheSameLap() {
+        val sw = Stopwatch()
+        sw.resetAndArm(ForcePlan(ForceMode.STOPWATCH, stopCentis = 10))
+        sw.start(0)
+        sw.stop(2_000) // 2,00 -> 2,10
+        assertEquals(210, sw.elapsedCs(0))
+        assertFalse(sw.forcingArmed)
+        sw.start(10_000) // reanudar: sigue en la misma vuelta, sin vueltas nuevas ni reset
+        sw.stop(11_500) // segunda parada, ya sin forzaje: 2,10 + 1,50
+        assertEquals(360, sw.elapsedCs(0))
+        assertTrue(sw.laps.isEmpty())
+    }
+
+    @Test fun stopModeFullCounterBelowTheLastLapKeepsTheActiveLapAtZero() {
+        val sw = Stopwatch()
+        sw.resetAndArm(ForcePlan(ForceMode.STOPWATCH, stopSubmode = StopSubmode.FULL, stopFullCs = 100L))
+        sw.start(0)
+        sw.lap(3_000) // total 3,00
+        sw.stop(3_500) // se sustituye por 1,00 (menor que la vuelta): la vuelta en curso no puede ser negativa
+        assertEquals(100, sw.elapsedCs(0))
+        assertEquals(0, sw.currentLapCs(0))
     }
 
     @Test fun plainResetDisarmsForcing() {

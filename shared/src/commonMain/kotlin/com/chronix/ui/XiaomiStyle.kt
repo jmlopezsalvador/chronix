@@ -44,8 +44,13 @@ fun XiaomiStopwatch(p: StopwatchScreenParams) {
                 items(p.laps.asReversed(), key = { it.number }) { lap ->
                     Row(Modifier.fillMaxWidth().padding(vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text(pad2(lap.number), style = digits(19, t.textSecondary, align = TextAlign.Start), modifier = Modifier.weight(0.6f))
-                        Text("+ " + formatCs(lap.lapCs, d), style = digits(19, t.textSecondary), modifier = Modifier.weight(1.3f))
-                        Text(formatCs(lap.totalCs, d), style = digits(19, t.text, FontWeight.Medium, TextAlign.End), modifier = Modifier.weight(1f))
+                        if (p.showTotals) {
+                            Text("+ " + formatCs(lap.lapCs, d), style = digits(19, t.textSecondary), modifier = Modifier.weight(1.3f))
+                            Text(formatCs(lap.totalCs, d), style = digits(19, t.text, FontWeight.Medium, TextAlign.End), modifier = Modifier.weight(1f))
+                        } else {
+                            // Sin totales, el tiempo de vuelta pasa a ser la cifra principal de la fila
+                            Text(formatCs(lap.lapCs, d), style = digits(19, t.text, FontWeight.Medium, TextAlign.End), modifier = Modifier.weight(2.3f))
+                        }
                     }
                 }
             }

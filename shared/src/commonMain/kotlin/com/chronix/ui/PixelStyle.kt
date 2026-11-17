@@ -58,7 +58,7 @@ fun PixelStopwatch(p: StopwatchScreenParams) {
                     ) {
                         Text(pad2(lap.number), style = digits(16, col))
                         Text(formatCs(lap.lapCs, t.decimal), style = digits(17, col), modifier = Modifier.padding(top = 4.dp))
-                        Text(formatCs(lap.totalCs, t.decimal), style = digits(17, col), modifier = Modifier.padding(top = 14.dp))
+                        if (p.showTotals) Text(formatCs(lap.totalCs, t.decimal), style = digits(17, col), modifier = Modifier.padding(top = 14.dp))
                     }
                 }
             }

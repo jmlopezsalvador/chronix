@@ -56,9 +56,18 @@ private val guidePages = listOf(
     GuidePage(
         "El forzaje",
         listOf(
-            "1. En los ajustes escribe las centésimas de cada vuelta (vuelta 1: 45, vuelta 2: 96…).",
+            "1. En los ajustes elige el modo y escribe tus números (dos cifras cada uno).",
             "2. Con el cronómetro en pausa, mantén pulsado el botón Restablecer (o Reiniciar). El móvil vibra y queda armado, sin que se vea nada.",
-            "3. Inicia el cronómetro y haz vueltas: cada una terminará en tus centésimas. Cuando se acaban, vuelve a ser un cronómetro normal.",
+            "3. Inicia el cronómetro y úsalo con normalidad. Cuando el forzaje ya ha actuado, termina solo y vuelve a ser un cronómetro normal.",
+            "Lo que se fuerza se sustituye siempre por tus números; lo que no, nunca retrocede.",
+        ),
+    ),
+    GuidePage(
+        "Los dos modos",
+        listOf(
+            "Por vueltas: cada vez que pulsas Vuelta, esa vuelta termina en las centésimas de tu lista (vuelta 1, vuelta 2…).",
+            "Cronómetro: las vueltas son normales y el forzaje actúa una sola vez, en el primer Parar. Puedes forzar solo las centésimas del contador grande o el contador completo (minutos, segundos y centésimas).",
+            "Después sigues parando e iniciando como en cualquier cronómetro, sobre la misma vuelta.",
         ),
     ),
     GuidePage(

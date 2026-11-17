@@ -59,8 +59,8 @@ fun OppoStopwatch(p: StopwatchScreenParams) {
             if (laps.isNotEmpty()) {
                 Row(Modifier.fillMaxWidth().padding(horizontal = 30.dp)) {
                     Text(t.headerLap, style = digits(15, t.textSecondary, align = TextAlign.Start), modifier = Modifier.weight(0.7f))
-                    Text(t.headerLapTime, style = digits(15, t.textSecondary), modifier = Modifier.weight(1.3f))
-                    Text(t.headerTotal, style = digits(15, t.textSecondary, align = TextAlign.End), modifier = Modifier.weight(1f))
+                    Text(t.headerLapTime, style = digits(15, t.textSecondary, align = if (p.showTotals) TextAlign.Center else TextAlign.End), modifier = Modifier.weight(if (p.showTotals) 1.3f else 2.3f))
+                    if (p.showTotals) Text(t.headerTotal, style = digits(15, t.textSecondary, align = TextAlign.End), modifier = Modifier.weight(1f))
                 }
             }
             LazyColumn(state = rememberLapListState(p.laps.size), modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 30.dp).padding(top = 10.dp)) {
@@ -68,8 +68,8 @@ fun OppoStopwatch(p: StopwatchScreenParams) {
                     val c = p.lapColor(lap, t.text)
                     Row(Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
                         Text(pad2(lap.number), style = digits(19, c, align = TextAlign.Start), modifier = Modifier.weight(0.7f))
-                        Text("+" + formatCs(lap.lapCs, d), style = digits(19, c), modifier = Modifier.weight(1.3f))
-                        Text(formatCs(lap.totalCs, d), style = digits(19, t.text, align = TextAlign.End), modifier = Modifier.weight(1f))
+                        Text("+" + formatCs(lap.lapCs, d), style = digits(19, c, align = if (p.showTotals) TextAlign.Center else TextAlign.End), modifier = Modifier.weight(if (p.showTotals) 1.3f else 2.3f))
+                        if (p.showTotals) Text(formatCs(lap.totalCs, d), style = digits(19, t.text, align = TextAlign.End), modifier = Modifier.weight(1f))
                     }
                 }
             }

@@ -10,9 +10,10 @@ import androidx.compose.runtime.Composable
 fun StopwatchScreen(
     state: StopwatchState,
     theme: ClockTheme,
+    showTotals: Boolean,
     onArmForcing: () -> Unit,
 ) {
-    val p = StopwatchScreenParams(state, theme, onArmForcing)
+    val p = StopwatchScreenParams(state, theme, showTotals, onArmForcing)
     TickEffect(state)
     when (theme.style) {
         ClockStyle.SAMSUNG -> SamsungStopwatch(p)

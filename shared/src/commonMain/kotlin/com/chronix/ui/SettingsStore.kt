@@ -1,6 +1,9 @@
 package com.chronix.ui
 
+import com.chronix.domain.ForceMode
+import com.chronix.domain.ForcePlan
 import com.chronix.domain.ForceTarget
+import com.chronix.domain.StopSubmode
 
 /** Almacenamiento clave-valor local. Android: SharedPreferences. iOS: NSUserDefaults (ver las `actual`). */
 interface KeyValueStore {
@@ -22,12 +25,35 @@ data class AppSettings(
     val forcedCs: List<Int> = listOf(0, 0, 0, 0),
     /** Dónde se fuerzan las centésimas: en el tiempo de vuelta (por defecto) o en el tiempo total. */
     val forceTarget: ForceTarget = ForceTarget.LAP,
+    /** Mostrar el tiempo total en la tabla de vueltas (los diseños que lo traen). Si se oculta, no se puede forzar el total. */
+    val showTotals: Boolean = true,
+    /** Cuándo actúa el forzaje: en cada vuelta o al pulsar Parar (modo cronómetro). */
+    val forceMode: ForceMode = ForceMode.LAPS,
+    /** Modo cronómetro: forzar solo las centésimas del contador grande o el contador completo. */
+    val stopSubmode: StopSubmode = StopSubmode.CENTIS,
+    /** Modo cronómetro / centésimas: centésimas (0..99) con las que se detiene el contador grande al parar. */
+    val stopCentis: Int = 0,
+    /** Modo cronómetro / contador completo: tiempo (en centésimas de segundo) con el que se detiene el contador al parar. */
+    val stopFullCs: Long = 0L,
     /** Icono de la app (id de [AppIconCatalog.icons]). Solo cambia al confirmarlo en el modal. */
     val iconId: String = AppIconCatalog.DEFAULT_ICON,
     /** Nombre de la app (id de [AppIconCatalog.names]). Solo Android. */
     val nameId: String = AppIconCatalog.DEFAULT_NAME,
     /** Mostrar la guía de inicio al abrir la app. Activa al instalar; se puede desactivar al final de la guía o en ajustes. */
     val showGuide: Boolean = true,
+)
+
+/** ¿Se ven los totales? Depende del ajuste y de que el diseño los tenga (el iPhone no). */
+fun AppSettings.totalsVisible(): Boolean = showTotals && ClockThemes.byId(themeId).showsTotal
+
+/** Plan de forzaje de estos ajustes. Con los totales ocultos, «total» no existe y se fuerza la vuelta. */
+fun AppSettings.forcePlan(): ForcePlan = ForcePlan(
+    mode = forceMode,
+    lapCs = forcedCs,
+    lapTarget = if (totalsVisible()) forceTarget else ForceTarget.LAP,
+    stopSubmode = stopSubmode,
+    stopCentis = stopCentis,
+    stopFullCs = stopFullCs,
 )
 
 class SettingsStore(private val prefs: KeyValueStore) {
@@ -44,6 +70,11 @@ class SettingsStore(private val prefs: KeyValueStore) {
             iconId = prefs.getString("iconId")?.takeIf { id -> AppIconCatalog.icons.any { it.id == id } } ?: d.iconId,
             nameId = prefs.getString("nameId")?.takeIf { id -> AppIconCatalog.names.any { it.id == id } } ?: d.nameId,
             showGuide = prefs.getBoolean("showGuide", d.showGuide),
+            showTotals = prefs.getBoolean("showTotals", d.showTotals),
+            forceMode = if (prefs.getString("forceMode") == "STOPWATCH") ForceMode.STOPWATCH else ForceMode.LAPS,
+            stopSubmode = if (prefs.getString("stopSubmode") == "FULL") StopSubmode.FULL else StopSubmode.CENTIS,
+            stopCentis = prefs.getLong("stopCs", d.stopCentis.toLong()).toInt().coerceIn(0, 99),
+            stopFullCs = prefs.getLong("stopFullCs", d.stopFullCs).coerceIn(0L, 99L * 6000 + 59 * 100 + 99),
         )
     }
 
@@ -55,5 +86,10 @@ class SettingsStore(private val prefs: KeyValueStore) {
         prefs.putString("iconId", s.iconId)
         prefs.putString("nameId", s.nameId)
         prefs.putBoolean("showGuide", s.showGuide)
+        prefs.putBoolean("showTotals", s.showTotals)
+        prefs.putString("forceMode", s.forceMode.name)
+        prefs.putString("stopSubmode", s.stopSubmode.name)
+        prefs.putLong("stopCs", s.stopCentis.toLong())
+        prefs.putLong("stopFullCs", s.stopFullCs)
     }
 }

@@ -10,14 +10,38 @@ enum class LapMark { NONE, BEST, WORST }
 /** Qué cifra de la vuelta lleva las centésimas forzadas: la del tiempo total o la del tiempo de vuelta. */
 enum class ForceTarget { TOTAL, LAP }
 
+/** Cuándo actúa el forzaje: en cada vuelta ([LAPS]) o una vez al pulsar Parar ([STOPWATCH], «modo cronómetro»). */
+enum class ForceMode { LAPS, STOPWATCH }
+
+/** Qué se fuerza al parar: solo las centésimas del contador grande, o el contador completo (minutos, segundos y centésimas). */
+enum class StopSubmode { CENTIS, FULL }
+
+/**
+ * Qué forzar al armar el forzaje. Con [ForceMode.LAPS] se usan [lapCs] y [lapTarget] (una posición por vuelta). Con
+ * [ForceMode.STOPWATCH] hay **un solo valor** que se aplica en el primer Parar tras armar: [stopCentis] (centésimas
+ * 0..99, si [stopSubmode] es CENTIS) o [stopFullCs] (tiempo completo en centésimas de segundo, si es FULL).
+ */
+class ForcePlan(
+    val mode: ForceMode = ForceMode.LAPS,
+    val lapCs: List<Int> = emptyList(),
+    val lapTarget: ForceTarget = ForceTarget.LAP,
+    val stopSubmode: StopSubmode = StopSubmode.CENTIS,
+    val stopCentis: Int = 0,
+    val stopFullCs: Long = 0L,
+)
+
 /**
  * Cronómetro puro (sin UI ni reloj propio): todas las operaciones reciben `nowMs`, un instante monotónico en
  * milisegundos. Así es determinista y testeable, y no deriva (se calcula por diferencia, no por ticks).
  *
- * Incluye el **modo forzaje**: con él armado, la n-ésima vuelta fija las centésimas de una de sus cifras
- * ([ForceTarget.TOTAL] o [ForceTarget.LAP]) al valor configurado para n. La otra cifra se obtiene por diferencia
- * o por suma, así la tabla siempre cuadra. El ajuste es siempre **al alza**: nunca se muestra un tiempo menor
- * que el real; los segundos se quedan en los que estamos o pasan al siguiente.
+ * Incluye el **modo forzaje** ([ForcePlan]). Por vueltas: la n-ésima vuelta fija las centésimas de una de sus cifras
+ * ([ForceTarget.TOTAL] o [ForceTarget.LAP]) al valor configurado para n; la otra cifra se obtiene por diferencia o por
+ * suma, así la tabla siempre cuadra. Modo cronómetro: en el primer Parar tras armar se fuerza el contador grande (solo
+ * centésimas o contador completo) y la vuelta en curso se ajusta sola (= contador − total de la última vuelta).
+ *
+ * **Regla general:** lo que se fuerza se sustituye siempre, tal cual (el contador completo puede incluso retroceder). Lo
+ * que NO se fuerza nunca viaja atrás: cuando solo se fuerzan centésimas, los minutos y segundos se quedan en los que
+ * estamos o pasan al siguiente.
  */
 class Stopwatch {
     var phase: Phase = Phase.IDLE
@@ -30,11 +54,16 @@ class Stopwatch {
     private var forced: List<Int> = emptyList()
     private var forcedIndex = 0
     private var target = ForceTarget.TOTAL
+    private var mode = ForceMode.LAPS
+    private var stopSubmode = StopSubmode.CENTIS
+    private var stopValue = 0L
+    private var stopPending = false // el forzaje del Parar sigue sin consumir
 
     val running: Boolean get() = phase == Phase.RUNNING
 
-    /** True mientras queden vueltas por forzar. Solo para lógica/tests: la UI nunca debe mostrarlo. */
-    val forcingArmed: Boolean get() = forcedIndex < forced.size
+    /** True mientras queden posiciones por forzar (vueltas o paradas). Solo para lógica/tests: la UI nunca debe mostrarlo. */
+    val forcingArmed: Boolean
+        get() = if (mode == ForceMode.STOPWATCH) stopPending else forcedIndex < forced.size
 
     fun elapsedMs(nowMs: Long): Long = if (running) baseMs + (nowMs - startedAt) else baseMs
 
@@ -52,6 +81,18 @@ class Stopwatch {
     fun stop(nowMs: Long) {
         if (!running) return
         baseMs = elapsedMs(nowMs)
+        if (mode == ForceMode.STOPWATCH && stopPending) {
+            stopPending = false
+            val real = baseMs / 10
+            val last = laps.lastOrNull()?.totalCs ?: 0L
+            baseMs = if (stopSubmode == StopSubmode.FULL) {
+                // Contador completo: se fuerzan minutos, segundos y centésimas, así que se sustituye tal cual (aunque retroceda)
+                stopValue * 10
+            } else {
+                // Solo centésimas: los minutos y segundos no se fuerzan y nunca viajan atrás (al alza)
+                forceTotal(real, last, stopValue.toInt()) * 10
+            }
+        }
         phase = Phase.PAUSED
     }
 
@@ -61,7 +102,7 @@ class Stopwatch {
         val real = elapsedCs(nowMs)
         val lapCs: Long
         val total: Long
-        if (forcingArmed) {
+        if (mode == ForceMode.LAPS && forcedIndex < forced.size) {
             val f = forced[forcedIndex++]
             if (target == ForceTarget.LAP) {
                 lapCs = forceLap(real - prev, f)
@@ -84,13 +125,25 @@ class Stopwatch {
         laps = emptyList()
         forced = emptyList()
         forcedIndex = 0
+        mode = ForceMode.LAPS
+        stopValue = 0L
+        stopPending = false
     }
 
-    /** Restablecer + armar el forzaje con la lista de centésimas (cada valor se limita a 0..99). */
-    fun resetAndArm(forcedCs: List<Int>, target: ForceTarget = ForceTarget.TOTAL) {
+    /** Restablecer + armar el forzaje por vueltas con la lista de centésimas (cada valor se limita a 0..99). */
+    fun resetAndArm(forcedCs: List<Int>, target: ForceTarget = ForceTarget.TOTAL) =
+        resetAndArm(ForcePlan(ForceMode.LAPS, lapCs = forcedCs, lapTarget = target))
+
+    /** Restablecer + armar el forzaje del [plan]. */
+    fun resetAndArm(plan: ForcePlan) {
         reset()
-        forced = forcedCs.map { it.coerceIn(0, 99) }
-        this.target = target
+        mode = plan.mode
+        forced = plan.lapCs.map { it.coerceIn(0, 99) }
+        target = plan.lapTarget
+        stopSubmode = plan.stopSubmode
+        stopValue = if (plan.stopSubmode == StopSubmode.CENTIS) plan.stopCentis.coerceIn(0, 99).toLong()
+        else plan.stopFullCs.coerceAtLeast(0L)
+        stopPending = plan.mode == ForceMode.STOPWATCH
     }
 
     companion object {

@@ -35,9 +35,11 @@ Temporizador). En la fase 1 solo el **cronómetro** es funcional y realista; las
 - **Ajustes secretos:** pulsación larga (1,5 s configurable) en cualquier zona vacía de la pantalla (no sobre controles; ver
   `secretAccess`/`blocksSecret` en `ui/Gestures.kt`). Incluyen icono y nombre de la app (modal de confirmación; en Android
   reinicia), guía de inicio, pantalla de Instrucciones y créditos.
-- **Modo forzaje:** pulsación larga en *Restablecer* → vibración → las centésimas del **tiempo de vuelta** (por defecto; opción
-  de forzar el total, con aviso si el diseño no lo muestra) se fuerzan a los valores guardados, siempre al alza; al agotarlos,
-  el cronómetro vuelve a ser normal. Nada debe ser visible.
+- **Modo forzaje:** pulsación larga en *Restablecer* → vibración. Dos modos (`ForcePlan`): *por vueltas* (centésimas del
+  **tiempo de vuelta** por defecto, u opción de forzar el total, que se deshabilita si los totales no se ven) y *cronómetro* (un solo valor, en el
+  primer Parar tras armar: solo centésimas o contador completo; la vuelta en curso se ajusta sola). Regla: lo que se fuerza se
+  sustituye siempre (el contador completo puede retroceder); lo que no se fuerza nunca retrocede. Al terminar el forzaje el
+  cronómetro vuelve a ser normal. Nada debe ser visible. Ajuste «Mostrar tiempos totales» para ocultar la columna de totales.
 - Detalle y decisiones en `docs/SPEC.md` (fuente de verdad funcional).
 - **Código:** lógica pura en `shared/.../domain/Stopwatch.kt` (reloj inyectado, con tests); temas en `ui/ClockTheme.kt`;
   un composable por diseño en `ui/<Marca>Style.kt` (despacha `ui/StopwatchScreen.kt`); piezas comunes en `ui/Common.kt`,

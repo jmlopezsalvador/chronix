@@ -147,12 +147,12 @@ private fun LapTable(p: StopwatchScreenParams, modifier: Modifier) {
     val d = t.decimal
     Column(modifier.fillMaxWidth()) {
         if (p.laps.isNotEmpty()) {
-            LapRow(t.headerLap, t.headerLapTime, t.headerTotal, t.textSecondary, header = true)
+            LapRow(t.headerLap, t.headerLapTime, if (p.showTotals) t.headerTotal else null, t.textSecondary, header = true)
             Box(Modifier.padding(horizontal = 32.dp).fillMaxWidth().height(1.dp).background(Color(0x33000000)))
         }
         LazyColumn(state = rememberLapListState(p.laps.size), modifier = Modifier.weight(1f).fillMaxWidth().padding(top = 6.dp)) {
             items(p.laps.asReversed(), key = { it.number }) { lap ->
-                LapRow(pad2(lap.number), formatCs(lap.lapCs, d), formatCs(lap.totalCs, d), p.lapColor(lap, t.text), header = false)
+                LapRow(pad2(lap.number), formatCs(lap.lapCs, d), if (p.showTotals) formatCs(lap.totalCs, d) else null, p.lapColor(lap, t.text), header = false)
             }
         }
     }
@@ -166,12 +166,13 @@ private fun CircleButton(label: String, bg: Color, textColor: Color, modifier: M
 }
 
 @Composable
-private fun LapRow(a: String, b: String, c: String, color: Color, header: Boolean) {
+private fun LapRow(a: String, b: String, c: String?, color: Color, header: Boolean) {
     val style = digits(if (header) 15 else 17, color, if (header) FontWeight.Medium else FontWeight.Normal)
     Row(Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = if (header) 12.dp else 8.dp)) {
         Text(a, style = style, modifier = Modifier.weight(0.8f))
-        Text(b, style = style, modifier = Modifier.weight(1.4f))
-        Text(c, style = style, modifier = Modifier.weight(1.4f))
+        // Sin totales la columna de vuelta ocupa el hueco de la de totales
+        Text(b, style = style, modifier = Modifier.weight(if (c != null) 1.4f else 2.8f))
+        if (c != null) Text(c, style = style, modifier = Modifier.weight(1.4f))
     }
 }
 

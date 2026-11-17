@@ -57,6 +57,17 @@ centésimas** de las vueltas y de la parada a valores preparados de antemano.
 - R22. Nada del forzaje debe ser visible ni detectable: sin textos, sin indicadores.
 - R22b. La lista de ajustes viene por defecto con **4** posiciones (valor 00) y se puede ampliar **sin límite**.
 
+## 6a. Modos de forzaje, totales ocultos y modo cronómetro
+- R30. **Mostrar tiempos totales** (ajustes, junto al look and feel): interruptor, activo por defecto. Desactivado, cada diseño muestra una versión sin la columna/línea de totales (Samsung, OnePlus, OPPO, Xiaomi, Huawei y Pixel; el iPhone ya no la tiene y el interruptor aparece deshabilitado).
+- R31. Con los totales ocultos (por el ajuste o por el diseño) **no se puede forzar el total**: la opción «Tiempo total» aparece deshabilitada y, si estaba elegida, pasa sola a «Tiempo de vuelta» con un modal que lo avisa. Esto sustituye al aviso anterior de «el diseño no muestra el total».
+- R32. **Modo de forzaje** (ajustes): *Por vueltas* (R17–R22) o *Cronómetro (al pulsar Parar)*.
+- R32b. **Regla general del forzaje:** lo que se fuerza se **sustituye siempre** por el número configurado; lo que no se fuerza **nunca viaja hacia atrás**. En el modo por vueltas se fuerzan las centésimas (los minutos y segundos de la vuelta no se fuerzan, así que van siempre al alza). En el modo cronómetro con *solo centésimas*, igual. En el modo cronómetro con *contador completo* se fuerzan los tres campos, así que se sustituye tal cual, **aunque el contador retroceda**.
+- R33. **Modo cronómetro:** las vueltas son normales. **No hay lista de paradas**: hay un único valor y el forzaje actúa **una sola vez, en el primer Parar tras armar**; después se puede seguir parando e iniciando sin reset, como en una app real: el contador sigue corriendo sobre la misma vuelta y no se vuelve a forzar. Dos submodos:
+  - *Solo centésimas*: el contador grande se detiene con las centésimas configuradas (0..99). Los minutos y segundos se quedan en los actuales o pasan al siguiente, nunca retroceden.
+  - *Contador completo*: se configuran minutos (0..99), segundos (0..59) y centésimas; el contador se detiene exactamente en ese tiempo, tal cual.
+- R34. Al parar con forzaje, la **vuelta en curso** se ajusta sola: vale contador − total de la última vuelta (nunca negativa: si el contador sustituido queda por debajo de la última vuelta, vale 0), así que las vueltas hechas más la vuelta en curso suman el contador. Al reanudar, el cronómetro sigue desde el valor forzado.
+- R35. **Icono de reiniciar:** el círculo con punta de flecha lleva la punta en el extremo final del arco (sentido horario), no en el inicial.
+
 ## 6b. Icono y nombre de la app, guía, instrucciones y créditos
 - R23. **Icono de la aplicación** (ajustes, apartado desplegable): lista de los 20 iconos de `data/icons` con miniatura y nombre. Por defecto, **Google / Android**. Al elegir otro sale un **modal de confirmación** (Cancelar / Aplicar). Android: un `activity-alias` por icono × nombre (80), solo uno habilitado; al aplicar se reinicia la app. iOS: icono alternativo (`AppIcon-<id>`); el propio iOS enseña un aviso del sistema y no se reinicia.
 - R24. **Nombre de la aplicación** (ajustes, desplegable, solo Android): *Chronix* (por defecto), *Reloj*, *Clock*, *Cronómetro*. Mismo modal de confirmación y reinicio. iOS no permite cambiar el nombre en ejecución, así que ahí no aparece.

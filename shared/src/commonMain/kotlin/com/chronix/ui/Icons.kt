@@ -88,7 +88,8 @@ fun DrawScope.drawIcon(kind: IconKind, c: Color, filled: Boolean = false) {
         IconKind.RESET -> {
             drawArc(c, startAngle = -50f, sweepAngle = 290f, useCenter = false,
                 topLeft = Offset(w * 0.16f, w * 0.18f), size = Size(w * 0.68f, w * 0.68f), style = line)
-            val p = Path().apply { moveTo(w * 0.54f, w * 0.02f); lineTo(w * 0.7f, w * 0.18f); lineTo(w * 0.5f, w * 0.28f) }
+            // El arco va de -50° a 240° en sentido horario: termina arriba a la izquierda, y ahí va la punta (hacia la derecha y arriba)
+            val p = Path().apply { moveTo(w * 0.296f, w * 0.365f); lineTo(w * 0.380f, w * 0.190f); lineTo(w * 0.186f, w * 0.175f) }
             drawPath(p, c, style = line)
         }
         IconKind.STOP -> drawRoundRect(c, Offset(w * 0.22f, w * 0.22f), Size(w * 0.56f, w * 0.56f), CornerRadius(w * 0.08f))

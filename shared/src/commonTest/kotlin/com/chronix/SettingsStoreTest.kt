@@ -1,9 +1,13 @@
 package com.chronix
 
+import com.chronix.domain.ForceMode
 import com.chronix.domain.ForceTarget
+import com.chronix.domain.StopSubmode
 import com.chronix.ui.AppSettings
 import com.chronix.ui.KeyValueStore
 import com.chronix.ui.SettingsStore
+import com.chronix.ui.forcePlan
+import com.chronix.ui.totalsVisible
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -61,6 +65,41 @@ class SettingsStoreTest {
         val s = SettingsStore(mem).load()
         assertEquals("google", s.iconId)
         assertEquals("chronix", s.nameId)
+    }
+
+    @Test fun stopModeSettingsDefaultsAndRoundTrip() {
+        val store = SettingsStore(MemoryStore())
+        val d = store.load()
+        assertEquals(ForceMode.LAPS, d.forceMode)
+        assertEquals(StopSubmode.CENTIS, d.stopSubmode)
+        assertEquals(true, d.showTotals)
+        assertEquals(0, d.stopCentis)
+        assertEquals(0L, d.stopFullCs)
+        store.save(AppSettings(
+            forceMode = ForceMode.STOPWATCH, stopSubmode = StopSubmode.FULL, showTotals = false,
+            stopCentis = 45, stopFullCs = 7_034L,
+        ))
+        val s = store.load()
+        assertEquals(ForceMode.STOPWATCH, s.forceMode)
+        assertEquals(StopSubmode.FULL, s.stopSubmode)
+        assertEquals(false, s.showTotals)
+        assertEquals(45, s.stopCentis)
+        assertEquals(7_034L, s.stopFullCs)
+    }
+
+    @Test fun totalsAreVisibleOnlyIfSettingOnAndThemeHasThem() {
+        assertEquals(true, AppSettings(themeId = "samsung").totalsVisible())
+        assertEquals(false, AppSettings(themeId = "samsung", showTotals = false).totalsVisible())
+        assertEquals(false, AppSettings(themeId = "iphone").totalsVisible()) // el iPhone no tiene columna de totales
+    }
+
+    @Test fun forcingTotalFallsBackToLapWhenTotalsAreHidden() {
+        val visible = AppSettings(themeId = "samsung", forceTarget = ForceTarget.TOTAL).forcePlan()
+        assertEquals(ForceTarget.TOTAL, visible.lapTarget)
+        val hidden = AppSettings(themeId = "samsung", showTotals = false, forceTarget = ForceTarget.TOTAL).forcePlan()
+        assertEquals(ForceTarget.LAP, hidden.lapTarget)
+        val iphone = AppSettings(themeId = "iphone", forceTarget = ForceTarget.TOTAL).forcePlan()
+        assertEquals(ForceTarget.LAP, iphone.lapTarget)
     }
 
     @Test fun emptyForcedListSurvivesRoundTrip() {

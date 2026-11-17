@@ -36,6 +36,8 @@ const val ARM_HOLD_MS = 800L
 class StopwatchScreenParams(
     val state: StopwatchState,
     val theme: ClockTheme,
+    /** Si se enseña el tiempo total de cada vuelta (ajuste + que el diseño lo tenga). */
+    val showTotals: Boolean,
     val onArmForcing: () -> Unit,
 ) {
     val sw get() = state.sw
