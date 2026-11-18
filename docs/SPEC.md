@@ -8,7 +8,7 @@ para que parezca auténtica. Solo el **cronómetro** es realista y funcional en 
 centésimas** de las vueltas y de la parada a valores preparados de antemano.
 
 - Plataformas: Android + iOS (un único código KMP). Orientación vertical. Idioma: español.
-- Todo en local. Sin red ni cuentas.
+- Todo en local. Sin cuentas. La red solo se usa con **Magic Friends** activado (§9); por defecto está apagado y la app no abre ninguna conexión.
 
 ## 2. Estructura de la app
 - R1. Al abrir, la app entra directamente en la pestaña **Cronómetro**.
@@ -42,6 +42,7 @@ centésimas** de las vueltas y de la parada a valores preparados de antemano.
   - Duración de la pulsación larga de acceso.
   - **Lista de centésimas forzadas** por vuelta (vuelta 1, 2, 3, 4…): dos dígitos cada una.
   - Vibración al armar el forzaje (activar/desactivar, por confirmar).
+  - **Magic Friends:** interruptor «Usar Magic Friends» y, con él activo, botón «Sesiones» (§9).
 
 ## 6. Modo forzaje (el efecto)
 - R17. **Armado:** pulsación larga (~0,8 s) sobre **Restablecer** → el cronómetro se pone a cero, vibra el móvil y queda armado el forzaje. Sin ningún cambio visual.
@@ -78,10 +79,48 @@ centésimas** de las vueltas y de la parada a valores preparados de antemano.
 - R29. Pie de los ajustes (y de las instrucciones): **«Desarrollado por WikiCode, Adri & Semi 2026»**.
 
 ## 7. Datos locales
-- Ajustes secretos (tema, duración de pulsación, lista de centésimas, forzar en vuelta/total, icono, nombre, guía de inicio) en SharedPreferences / UserDefaults.
+- Ajustes secretos (tema, duración de pulsación, lista de centésimas, forzar en vuelta/total, icono, nombre, guía de inicio, interruptor de Magic Friends) en SharedPreferences / UserDefaults.
+- Magic Friends guarda en el mismo almacén, con el prefijo `mf.`, la identidad anónima del dispositivo (`deviceId`/`deviceKey`) y la última instantánea de ajustes remotos. Solo se crean al activar Magic Friends.
 
 ## 8. Decisiones tomadas (resueltas con el usuario, 2026-11-16)
 - Se fuerzan las centésimas de cada **vuelta** (tiempo total), no las de la pausa. El tiempo de vuelta sale por diferencia.
 - Lista de posiciones ilimitada, 4 por defecto. Solo se fuerzan centésimas.
 - Pestañas Alarma / Reloj mundial / Temporizador: no responden al toque en la fase 1.
 - Colores de vueltas: la **primera** vuelta siempre en color normal; a partir de la 2.ª, la más corta en azul y la más larga en rojo (hacen falta al menos 2 vueltas coloreables).
+
+## 9. Magic Friends: ajustes en remoto (decisiones del 2026-11-18)
+Un **ayudante** cambia en directo, desde su móvil, los ajustes de predicción de este móvil (el **mago**). Servicio y librería
+cliente en el repo hermano `magicfriends` (ver su `docs/DISENO.md` y `protocol/PROTOCOLO.md`; son la fuente de verdad del
+protocolo). Lo de aquí es lo propio de Chronix. **Fase 1 (hecha): Chronix como mago.** Fase 2 (pendiente): Chronix como ayudante,
+reutilizando la pantalla de forzaje. Fase 3: QR, caché y más.
+
+- R30. **Interruptor «Usar Magic Friends»** en los ajustes (por defecto **apagado**). Es el interruptor *del móvil*: usar o no lo remoto.
+  Solo con él activo se crea el cliente, se abre la red y se genera la identidad; apagado no hay red, ni cliente, ni identidad.
+  Si la compilación no lleva configuración (R38), el interruptor sale desactivado.
+- R31. **Capa remota separada de los ajustes locales** (los remotos nunca los machacan). Lista blanca de claves remotas
+  (`RemoteKeys`): `forceMode`, `forceTarget`, `forcedCs`, `stopSubmode`, `stopCentis`, `stopFullCs`. **Nunca remotos:** aspecto, icono,
+  nombre, `secretHoldMs`, guía, `showTotals` (el mago decide qué se ve: sin totales visibles se fuerza la vuelta aunque el ayudante pida el total).
+  **Efectivo = `remoto[clave] ?: local[clave]`** con Magic Friends activo; si no, solo el local. El solapado entra en `AppSettings.forcePlan(remote)`,
+  único sitio donde se construye el `ForcePlan`.
+- R32. **Formato en el cable** (JSON Merge Patch; un `null` quita el override y vuelve el local): `forceMode` `"LAPS"|"STOPWATCH"`;
+  `forceTarget` `"LAP"|"TOTAL"`; `stopSubmode` `"CENTIS"|"FULL"`; `forcedCs` array de enteros 0..99 (una posición por vuelta);
+  `stopCentis` entero 0..99; `stopFullCs` entero 0..`STOP_FULL_CS_MAX` (centésimas de segundo). Validación como en `SettingsStore.load()`:
+  los números fuera de rango se **limitan**; un tipo erróneo, un enum desconocido o un `forcedCs` con algún elemento que no es número se **ignoran**
+  (esa clave la decide el local; así las posiciones de las vueltas nunca se desplazan). Un `forcedCs` vacío es válido (sin forzaje por vueltas).
+- R33. **Cambio en vivo hasta el último instante.** Armar (pulsación larga en Restablecer) solo marca «armado»; el plan **no se copia**: el cronómetro
+  lo pide a su origen en cada vuelta y en cada Parar (`Stopwatch.resetAndArm { … }`). El ayudante puede cambiar valores, e incluso el modo, tras armar.
+  La vuelta n usa la posición n de la lista. El forzaje del Parar actúa una vez y desarma del todo. Si el origen falla, vale el último plan leído.
+- R34. **Sin red el efecto no falla.** La librería guarda la última instantánea remota (y respeta la caducidad con el reloj local); se usa al arrancar y sin conexión.
+  La conexión se reintenta sola y un vigilante la reinicia si lleva 8 s caída. Los indicadores de conexión solo existen en la pantalla secreta de Magic Friends.
+- R35. **Aviso discreto:** al llegar un cambio del ayudante (`ClientEvent.RemotePatch`) vibra un pulso suave y breve (distinto del pulso firme de armar).
+- R36. **Pantalla «Sesiones»** (fondo blanco como los ajustes): estado de la conexión; crear sesión (nombre ≤ 40, caducidad *Sin caducidad / 1 h / 24 h / 7 días*);
+  código de emparejamiento (6 caracteres, un solo uso, 10 min) con «Nuevo código» (sirve para re-emparejar: quien lo use sustituye al ayudante anterior);
+  solicitudes pendientes (Aceptar / Rechazar); por sesión: Activar / Pausar, Revocar (definitivo) y Borrar, con confirmación en los destructivos.
+  **Solo una sesión activa a la vez**; *pausada* no es *caducada* ni *revocada*. Cambiar la caducidad de una sesión ya creada y el QR quedan para la fase 3.
+- R37. **Borrar** una sesión reconecta el cliente (`MagicFriendsController.refresh`): el servidor solo envía un `ack` al mago y la librería 0.1.0 no la retira de su lista
+  ni deja de aplicar sus ajustes hasta reconectar. Se quita cuando la librería lo corrija.
+- R38. **Configuración sensible** (el repo es público): URL del servidor y `appKey` **no** van en el código ni en ficheros versionados. Gradle los lee de
+  `-Pmagicfriends.serverUrl` / `-Pmagicfriends.appKey`, del entorno (`MAGICFRIENDS_SERVER_URL` / `MAGICFRIENDS_APP_KEY`, secretos del repo en Actions) o de
+  `local.properties`, y genera `MagicFriendsConfig.kt` en `build/`. Sin valores la app compila igual, con Magic Friends desactivado. La `appKey` va dentro del binario
+  (protección débil, solo frena altas casuales de magos).
+- R39. **Plataformas:** Android declara el permiso `INTERNET` (generado por `tools/gen_icons.py`). iOS no necesita permisos (HTTPS/WSS). Las instrucciones y la guía de inicio explican Magic Friends.

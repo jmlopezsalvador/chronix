@@ -15,6 +15,7 @@ El usuario habla español: responde y comenta el código en español.
 | `data/` | Material de referencia que aporta el usuario (capturas, icono, recursos). Se puede leer. |
 | `data/android_build/` | APK descargados/generados. No se versionan. |
 | `data/ios_build/` | `.ipa` descargado de Actions. No se versiona. |
+| `../magicfriends/` | Repo hermano (`C:\Users\jmlop\magicfriends`): servicio + librería cliente KMP de Magic Friends. Chronix lo consume con `includeBuild("../magicfriends/client")`. **No modificarlo desde esta sesión**: si la librería necesita un cambio, describírselo al usuario (se hace en su propia sesión). |
 | `ignore/` | **Ignorar por completo** (ver reglas). |
 
 ## Reglas para Claude
@@ -25,7 +26,8 @@ El usuario habla español: responde y comenta el código en español.
   Por defecto se lanza **sin tests** (el usuario prueba en su iPhone); solo con tests si él lo pide.
 - No inventar funcionalidad: la fuente de verdad es `docs/SPEC.md` y lo que pida el usuario. Ante la duda, preguntar.
 - **No hacer commit ni push sin que el usuario lo pida.** No commitear si la compilación falla.
-- Datos solo en local (SharedPreferences / UserDefaults y ficheros internos). Sin red ni cuentas salvo que el SPEC lo diga.
+- Datos solo en local (SharedPreferences / UserDefaults y ficheros internos). Sin cuentas. **La red solo con Magic Friends activado** (SPEC §9); apagado, la app no abre ninguna conexión.
+- **El repo es público: la URL del servidor y la `appKey` de Magic Friends NUNCA van en código, docs ni ficheros versionados** (ver «Configuración de Magic Friends» abajo). No pegar la `appKey` en el chat.
 - Mantener este `CLAUDE.md` al día: al cambiar de forma relevante la app, el flujo o las decisiones, actualizarlo en la misma tarea.
 
 ## Qué hace la app
@@ -40,6 +42,10 @@ Temporizador). En la fase 1 solo el **cronómetro** es funcional y realista; las
   primer Parar tras armar: solo centésimas o contador completo; la vuelta en curso se ajusta sola). Regla: lo que se fuerza se
   sustituye siempre (el contador completo puede retroceder); lo que no se fuerza nunca retrocede. Al terminar el forzaje el
   cronómetro vuelve a ser normal. Nada debe ser visible. Ajuste «Mostrar tiempos totales» para ocultar la columna de totales.
+- **Magic Friends (SPEC §9):** un ayudante cambia en remoto, en directo, los ajustes de forzaje (lista blanca `RemoteKeys`). Efectivo = `remoto ?: local`; se lee en cada
+  vuelta/Parar (plan vivo en `Stopwatch.resetAndArm { … }`), también tras armar. Interruptor del móvil en los ajustes (apagado = sin red). Sin red usa la última instantánea.
+  Código: `ui/RemoteSettings.kt` (lista blanca y validación), `ui/MagicFriends.kt` (controlador + almacén), `ui/MagicFriendsScreen.kt` (pantalla del mago).
+  Fase 1 hecha (Chronix como mago); **fase 2 pendiente** (Chronix como ayudante, con la pantalla de forzaje).
 - Detalle y decisiones en `docs/SPEC.md` (fuente de verdad funcional).
 - **Código:** lógica pura en `shared/.../domain/Stopwatch.kt` (reloj inyectado, con tests); temas en `ui/ClockTheme.kt`;
   un composable por diseño en `ui/<Marca>Style.kt` (despacha `ui/StopwatchScreen.kt`); piezas comunes en `ui/Common.kt`,
@@ -47,6 +53,8 @@ Temporizador). En la fase 1 solo el **cronómetro** es funcional y realista; las
 - **Iconos:** 20 iconos de `data/icons`; `python tools/gen_icons.py` regenera alias de Android (`AndroidManifest.xml`), iconos de iOS
   (`Assets.xcassets/AppIcon-<id>`) y `ui/AppIconCatalog.kt`. Si se añade/cambia un control pulsable, marcarlo con `blocksSecret()`.
 - **Estado (fase 1):** cronómetro en 7 diseños + forzaje + ajustes secretos. Probado en el emulador Android (los 7 diseños, forzaje en Samsung y OnePlus); falta probarlo en un móvil real (vibración). iOS sin compilar aún (la háptica `UIImpactFeedbackGenerator` y los gestos son lo más arriesgado).
+  Magic Friends (mago) probado en el emulador Android contra el servidor real (conectar, crear/aceptar/activar/borrar sesión, cambio remoto tras armar, sin red con la app reiniciada, interruptor apagado = 0 sockets).
+  iOS: lo nuevo sin compilar (Ktor Darwin de la librería `iosMain`, `rememberSoftVibrate`, `remove` de `UserDefaultsStore`); el primer Actions con la librería puede fallar en `iosMain` de la librería.
 
 ## Reglas de código para que compile en iOS
 - En `commonMain`: nada de `java.*` ni `android.*`. Usar `kotlinx-datetime` (0.6.1), `kotlin.math.*` y, si hace falta aritmética
@@ -62,10 +70,16 @@ Temporizador). En la fase 1 solo el **cronómetro** es funcional y realista; las
 ## Compilar y probar (Windows)
 - Kotlin 2.0.21, Compose Multiplatform 1.7.1, AGP 8.7.3, Gradle 8.9, JDK 17, minSdk 26, target/compileSdk 35, iOS mínimo 15.0.
 - `JAVA_HOME` apunta al JDK 17: `C:\Program Files\Microsoft\jdk-17.0.21.21-hotspot`.
-- SDK de Android en `C:\Users\jmlop\AppData\Local\Android\Sdk`: crear `local.properties` con `sdk.dir=...` (ignorado por git).
+- SDK de Android en `C:\Users\jmlop\AppData\Local\Android\Sdk`: crear `local.properties` con `sdk.dir=...` (ignorado por git). Ahí van también `magicfriends.serverUrl` y `magicfriends.appKey` (ver abajo).
+- **Configuración de Magic Friends** (el repo es público, estos valores no se versionan): la URL del servidor y la `appKey` se leen de `-Pmagicfriends.serverUrl` / `-Pmagicfriends.appKey`, de las variables
+  `MAGICFRIENDS_SERVER_URL` / `MAGICFRIENDS_APP_KEY` o de `local.properties`, y `shared/build.gradle.kts` genera `MagicFriendsConfig.kt` en `build/`. La `appKey` está en `~/.magicfriends-cli/app-key.txt` (no pegarla en el chat).
+  Sin valores la app compila con Magic Friends desactivado. En Actions salen de los secretos del repo `MAGICFRIENDS_SERVER_URL` y `MAGICFRIENDS_APP_KEY` (creados con `gh secret set`).
+- Hace falta el repo hermano en `C:\Users\jmlop\magicfriends` (`includeBuild("../magicfriends/client")`). En CI, `ios.yml` lo clona en `../magicfriends`; si pasa a privado, necesitará un token de solo lectura.
+- Probar contra el servidor real con el CLI del repo hermano (`node tools/cli/mf.ts ayudante --url <url>`, interactivo; para scriptearlo, un pequeño controlador en Node con `spawn` y esperas entre comandos; PowerShell 5.1 no sirve para canalizarle la entrada).
 - `./gradlew.bat :shared:testDebugUnitTest assembleDebug` → APK en `app/build/outputs/apk/debug/app-debug.apk`.
   Copiar el APK a `data/android_build/` si se quiere conservar.
-- Emulador AVD `calcu` (Android 15), reutilizable. Poner la zona horaria `Europe/Madrid` (arranca en GMT). Gboard puede salir en negro (es del emulador).
+- Emulador: el AVD `calcu` ya no existe. Usar **`chronix-emu`** (Android 15, pixel_6, creado con `avdmanager`; `emulator -avd chronix-emu -port 5556`) y **no usar `omniweb-emu` ni `calculadora-emu`**: son de otras sesiones de Claude
+  (mirar con `adb devices` y qué app tiene el foco antes de pulsar nada). Poner la zona horaria `Europe/Madrid` (arranca en GMT). Gboard puede salir en negro o abrir un tutorial de lápiz táctil (es del emulador; `adb shell settings put secure stylus_handwriting_enabled 0`).
 - `gh` en Windows: `C:\Program Files\GitHub CLI\gh.exe` (hace falta `gh auth login` una vez).
 - En Windows los destinos de iOS se ignoran (`kotlin.native.ignoreDisabledTargets=true`); Android compila y testea igual.
 
@@ -73,7 +87,7 @@ Temporizador). En la fase 1 solo el **cronómetro** es funcional y realista; las
 1. Desarrollar y probar en Android/JVM en local (emulador).
 2. Commit y push cuando el usuario lo pida.
 3. **Preguntar antes de lanzar Actions** y acumular mejoras: `gh workflow run ios.yml --ref main` (opción `-f tests=true` solo si se pide).
-4. Descargar el artefacto a `data/ios_build/`: `gh run download <id> -n <Nombre>-ios-sin-firmar -D data/ios_build`.
+4. Descargar el artefacto a `data/ios_build/`: `gh run download <id> -n <Nombre>-ios-sin-firmar -D data/ios_build`. **Después borrar el run** (`gh run delete <id>`): el `.ipa` lleva dentro la `appKey` y el repo es público (el artefacto ya caduca a 1 día). Al pasar los repos a privado, rotar la `appKey` (`wrangler secret put APP_SECRET` en el repo hermano + secreto de Actions + `local.properties`).
 5. Instalar el `.ipa` con Sideloadly/AltStore (Apple ID gratis; caduca a los 7 días; activar Modo desarrollador en el iPhone).
 
 ## Lecciones de iOS ya aprendidas

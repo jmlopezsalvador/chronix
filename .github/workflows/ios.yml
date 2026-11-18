@@ -10,8 +10,19 @@ jobs:
   build:
     runs-on: macos-15
     timeout-minutes: 60
+    env:
+      # Configuración de Magic Friends: sale de secretos del repo (Settings → Secrets and variables → Actions), nunca del
+      # código. Gradle la lee del entorno y genera MagicFriendsConfig.kt (ver shared/build.gradle.kts). Sin ellos la app
+      # compila igual, con Magic Friends desactivado.
+      MAGICFRIENDS_SERVER_URL: ${{ secrets.MAGICFRIENDS_SERVER_URL }}
+      MAGICFRIENDS_APP_KEY: ${{ secrets.MAGICFRIENDS_APP_KEY }}
     steps:
       - uses: actions/checkout@v4
+      # Librería de Magic Friends: carpeta hermana, porque settings.gradle.kts hace includeBuild("../magicfriends/client").
+      # actions/checkout no puede escribir fuera del workspace, por eso se clona a mano. Mientras el repo sea público no
+      # hacen falta credenciales; si pasa a privado habrá que usar un token de solo lectura (secreto del repo).
+      - name: Clonar la librería de Magic Friends
+        run: git clone --depth 1 https://github.com/jmlopezsalvador/magicfriends.git ../magicfriends
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 17 }
       - uses: android-actions/setup-android@v3
@@ -42,3 +53,6 @@ jobs:
           name: Chronix-ios-sin-firmar
           path: iosApp/build/Chronix.ipa
           if-no-files-found: error
+          # El .ipa lleva dentro la appKey y el repo es público (cualquier usuario de GitHub puede descargar los
+          # artefactos): que caduque en 1 día y borrar el run tras descargarlo (gh run delete <id>).
+          retention-days: 1

@@ -60,6 +60,9 @@ Regla de oro: **si no es estrictamente del sistema, va en `shared/commonMain`**.
 Bibliotecas multiplataforma (lo de `java.*` **no existe en iOS**, hay que usar estas):
 - `com.ionspin.kotlin:bignum:0.3.10` → `BigDecimal`/`BigInteger` en vez de `java.math`.
 - `org.jetbrains.kotlinx:kotlinx-datetime:0.6.1` → fecha/hora en vez de `java.time`.
+- `com.magicfriends:magicfriends-client` (repo hermano `../magicfriends/client`, vía `includeBuild` en `settings.gradle.kts`) → cliente de Magic Friends
+  (Ktor 3.0.3, coroutines 1.9.0, serialization-json 1.7.3 como `api`). Hace falta añadir `io.ktor:ktor-client-core:3.0.3` a `commonMain`, porque su constructor
+  expone `HttpClient` pero la librería lo declara `implementation`. En CI el repo se clona en `../magicfriends` (`ios.yml`).
 - Tests: `kotlin("test")` en `commonTest` (no JUnit).
 
 ---
@@ -194,9 +197,12 @@ interface KeyValueStore {
     fun putString(key: String, value: String)
     fun putBoolean(key: String, value: Boolean)
     fun putLong(key: String, value: Long)
+    fun remove(key: String)
 }
-class SettingsStore(private val prefs: KeyValueStore) { fun load(): AppSettings; fun save(s: AppSettings) }
+class SettingsStore(val prefs: KeyValueStore) { fun load(): AppSettings; fun save(s: AppSettings) }
 ```
+> Chronix también implementa (adaptador `MagicFriendsPrefs`, sin `expect/actual` nuevos) el `KeyValueStore` de la librería de
+> Magic Friends (`getString/putString/remove`) sobre este mismo almacén, con claves de prefijo `mf.`.
 - Android: `SharedPrefsStore(context)` (envuelve `SharedPreferences`).
 - iOS: `UserDefaultsStore()` (envuelve `NSUserDefaults.standardUserDefaults`; ojo, `getBoolean/getLong` deben mirar
   `objectForKey(key) == null` para devolver el valor por defecto).
