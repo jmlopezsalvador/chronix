@@ -91,8 +91,8 @@ centésimas** de las vueltas y de la parada a valores preparados de antemano.
 ## 9. Magic Friends: ajustes en remoto (decisiones del 2026-11-18)
 Un **ayudante** cambia en directo, desde su móvil, los ajustes de predicción de este móvil (el **mago**). Servicio y librería
 cliente en el repo hermano `magicfriends` (ver su `docs/DISENO.md` y `protocol/PROTOCOLO.md`; son la fuente de verdad del
-protocolo). Lo de aquí es lo propio de Chronix. **Fase 1 (hecha): Chronix como mago.** Fase 2 (pendiente): Chronix como ayudante,
-reutilizando la pantalla de forzaje. Fase 3: QR, caché y más.
+protocolo). Lo de aquí es lo propio de Chronix. **Fase 1 (hecha): Chronix como mago.** **Fase 2 (hecha): Chronix como ayudante**
+(R40-R45), reutilizando la pantalla de forzaje. Fase 3 (pendiente): QR, cambiar la caducidad de una sesión y más.
 
 - R30. **Interruptor «Usar Magic Friends»** en los ajustes (por defecto **apagado**). Es el interruptor *del móvil*: usar o no lo remoto.
   Solo con él activo se crea el cliente, se abre la red y se genera la identidad; apagado no hay red, ni cliente, ni identidad.
@@ -124,3 +124,18 @@ reutilizando la pantalla de forzaje. Fase 3: QR, caché y más.
   `local.properties`, y genera `MagicFriendsConfig.kt` en `build/`. Sin valores la app compila igual, con Magic Friends desactivado. La `appKey` va dentro del binario
   (protección débil, solo frena altas casuales de magos).
 - R39. **Plataformas:** Android declara el permiso `INTERNET` (generado por `tools/gen_icons.py`). iOS no necesita permisos (HTTPS/WSS). Las instrucciones y la guía de inicio explican Magic Friends.
+
+### Chronix como ayudante (fase 2)
+- R40. **Pantalla del ayudante:** botón «Soy el ayudante» en los ajustes (visible si la compilación lleva la URL del servidor; no depende del interruptor del mago ni necesita la `appKey`).
+  Su conexión y su identidad (`mf.helper.*`, distinta de la del mago) **solo existen mientras la pantalla está abierta**: sin pantalla, sin red. Un dispositivo ayudante queda ligado
+  a **un mago a la vez** (usar el código de otro mago cambia el emparejamiento). Un mismo móvil puede ser mago y ayudante.
+- R41. **Unirse:** código de 6 caracteres + nombre (≤ 24, lo ve el mago) → solicitud pendiente («Esperando a que el mago la acepte…»). El emparejamiento sobrevive a reiniciar la app.
+  Errores traducidos (código no válido o ya usado, demasiados intentos, sesión caducada o llena, sin conexión) y avisos (solicitud rechazada, acceso revocado, sesión borrada, sustituido por otro ayudante).
+- R42. **Editor reutilizado:** `ForcingEditor` es el mismo bloque de forzaje de los ajustes locales, parametrizado por `ForcingValues` (las seis claves de la lista blanca), con textos propios del ayudante.
+  «Tiempo total» siempre se puede elegir; si el móvil del mago no muestra totales, allí se fuerza la vuelta (R31).
+- R43. **Plan completo y envío explícito** (decidido el 2026-11-18): el ayudante manda siempre las **seis claves** (`ForcingValues.toPatch()`, exactamente lo que acepta `parseRemoteOverrides`), con el botón
+  **«Enviar»** y nunca por tecla (así no llegan valores a medias ni vibraciones repetidas al mago). Estado visible: «Todavía no has enviado tu plan: el móvil del mago usa sus propios ajustes» o «Controlando…
+  (rev N)»; una vez controlando, «Enviar» solo se habilita con cambios. **«Soltar el control»** manda `null` en las seis claves y el móvil del mago vuelve a sus ajustes. El borrador sigue lo que haya
+  en el servidor mientras el ayudante no lo toque.
+- R44. **Estado de la sesión:** solo se envía con la sesión *activa* y con conexión; si está pausada o caducada se puede ir preparando el plan, pero «Enviar» y «Soltar» quedan deshabilitados y se dice por qué.
+- R45. Limitaciones: no hay «abandonar la sesión» (la librería no lo ofrece; basta con unirse con otro código); cambiar la caducidad de una sesión y el QR, para la fase 3.
