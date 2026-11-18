@@ -7,19 +7,15 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,18 +23,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.chronix.domain.ForceMode
 import com.chronix.domain.ForceTarget
-import com.chronix.domain.StopSubmode
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 import org.jetbrains.compose.resources.ExperimentalResourceApi
@@ -60,6 +51,7 @@ fun SecretSettingsScreen(
     onShowGuide: () -> Unit,
     onOpenInstructions: () -> Unit,
     onOpenMagicFriends: () -> Unit,
+    onOpenHelper: () -> Unit,
 ) {
     val focus = LocalFocusManager.current
     var warning by remember { mutableStateOf<String?>(null) }
@@ -124,105 +116,16 @@ fun SecretSettingsScreen(
             )
         }
 
-        // --- Forzaje
-        Section("Modo de forzaje")
-        listOf(
-            ForceMode.LAPS to "Por vueltas (en cada vuelta)",
-            ForceMode.STOPWATCH to "Cronómetro (al pulsar Parar)",
-        ).forEach { (mode, label) ->
-            Row(Modifier.fillMaxWidth().clickable { focus.clearFocus(); change(settings.copy(forceMode = mode)) },
-                verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(selected = settings.forceMode == mode, onClick = { focus.clearFocus(); change(settings.copy(forceMode = mode)) })
-                Text(label, color = Color.Black)
-            }
-        }
-
-        if (settings.forceMode == ForceMode.LAPS) {
-            Section("Forzar las centésimas en")
-            Text(
-                if (totalsVisible) "Lo normal es el tiempo de vuelta; el total sale como consecuencia de las vueltas."
-                else "«Tiempo total» no está disponible porque los totales no se ven.",
-                fontSize = 13.sp, color = Color.Gray,
-            )
-            listOf(
-                ForceTarget.LAP to "Tiempo de vuelta (recomendado)",
-                ForceTarget.TOTAL to "Tiempo total",
-            ).forEach { (target, label) ->
-                val enabled = target == ForceTarget.LAP || totalsVisible
-                Row(
-                    Modifier.fillMaxWidth().let { if (enabled) it.clickable { focus.clearFocus(); change(settings.copy(forceTarget = target)) } else it },
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    RadioButton(
-                        selected = settings.forceTarget == target, enabled = enabled,
-                        onClick = { focus.clearFocus(); change(settings.copy(forceTarget = target)) },
-                    )
-                    Text(label, color = if (enabled) Color.Black else Color.Gray)
-                }
-            }
-
-            Section("Centésimas forzadas por vuelta")
-            Text("Con el forzaje armado (pulsación larga en Restablecer), la vuelta n termina en estas centésimas.",
-                fontSize = 13.sp, color = Color.Gray)
-            Spacer(Modifier.height(8.dp))
-            settings.forcedCs.forEachIndexed { i, v ->
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Vuelta ${i + 1}", color = Color.Black, modifier = Modifier.width(90.dp))
-                    NumberField(value = v, max = 99, width = 100.dp,
-                        onValue = { n -> onChange(settings.copy(forcedCs = settings.forcedCs.toMutableList().also { it[i] = n })) })
-                    TextButton(onClick = {
-                        focus.clearFocus()
-                        onChange(settings.copy(forcedCs = settings.forcedCs.toMutableList().also { it.removeAt(i) }))
-                    }) { Text("Quitar") }
-                }
-            }
-            Spacer(Modifier.height(8.dp))
-            Button(onClick = { focus.clearFocus(); onChange(settings.copy(forcedCs = settings.forcedCs + 0)) }) { Text("Añadir vuelta") }
-        } else {
-            Section("Qué forzar al parar")
-            Text("Las vueltas no se tocan. El forzaje actúa una sola vez, la primera vez que pulsas Parar tras armarlo; " +
-                "después puedes seguir parando e iniciando sin que se vuelva a forzar. La vuelta en curso se ajusta sola " +
-                "para que cuadre con el contador.", fontSize = 13.sp, color = Color.Gray)
-            listOf(
-                StopSubmode.CENTIS to "Solo centésimas del contador grande",
-                StopSubmode.FULL to "Contador completo (minutos, segundos y centésimas)",
-            ).forEach { (sub, label) ->
-                Row(Modifier.fillMaxWidth().clickable { focus.clearFocus(); onChange(settings.copy(stopSubmode = sub)) },
-                    verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(selected = settings.stopSubmode == sub, onClick = { focus.clearFocus(); onChange(settings.copy(stopSubmode = sub)) })
-                    Text(label, color = Color.Black)
-                }
-            }
-
-            if (settings.stopSubmode == StopSubmode.CENTIS) {
-                Section("Centésimas al parar")
-                Text("Las centésimas del contador grande al parar. Los minutos y segundos no se tocan: se quedan en los que " +
-                    "estás o pasan al siguiente, nunca retroceden.", fontSize = 13.sp, color = Color.Gray)
-                Spacer(Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Centésimas", color = Color.Black, modifier = Modifier.width(110.dp))
-                    NumberField(value = settings.stopCentis, max = 99, width = 100.dp,
-                        onValue = { n -> onChange(settings.copy(stopCentis = n)) })
-                }
-            } else {
-                Section("Contador al parar")
-                Text("Minutos, segundos y centésimas con los que se detiene el contador grande. Se sustituyen tal cual, " +
-                    "aunque el contador tenga que retroceder.", fontSize = 13.sp, color = Color.Gray)
-                Spacer(Modifier.height(8.dp))
-                val v = settings.stopFullCs
-                val m = (v / 6000).toInt()
-                val sec = ((v / 100) % 60).toInt()
-                val c = (v % 100).toInt()
-                fun set(nm: Int, ns: Int, nc: Int) = onChange(settings.copy(stopFullCs = nm * 6000L + ns * 100L + nc))
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    NumberField(value = m, max = 99, width = 76.dp, onValue = { set(it, sec, c) })
-                    Text(":", fontSize = 20.sp, color = Color.Black)
-                    NumberField(value = sec, max = 59, width = 76.dp, onValue = { set(m, it, c) })
-                    Text(",", fontSize = 20.sp, color = Color.Black)
-                    NumberField(value = c, max = 99, width = 76.dp, onValue = { set(m, sec, it) })
-                }
-            }
-        }
+        // --- Forzaje (el mismo editor lo usa el ayudante de Magic Friends)
+        ForcingEditor(
+            values = settings.forcingValues(),
+            totalsVisible = totalsVisible,
+            onChange = { v ->
+                val new = settings.withForcing(v)
+                // El modo y «forzar en» pasan por `change` (avisa si el total ya no se ve); el resto se guarda directamente
+                if (new.forceMode != settings.forceMode || new.forceTarget != settings.forceTarget) change(new) else onChange(new)
+            },
+        )
 
         Section("Pulsación larga para abrir los ajustes (en una zona vacía)")
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -253,6 +156,15 @@ fun SecretSettingsScreen(
         if (mfOn) {
             Spacer(Modifier.height(4.dp))
             OutlinedButton(onClick = { focus.clearFocus(); onOpenMagicFriends() }) { Text("Sesiones") }
+        }
+        if (MagicFriendsConfig.helperAvailable) {
+            Spacer(Modifier.height(16.dp))
+            Text(
+                "Controlar a otro mago: cambias en remoto sus ajustes de forzaje con el código que él te dé. La red solo se usa mientras esa pantalla está abierta.",
+                fontSize = 13.sp, color = Color.Gray,
+            )
+            Spacer(Modifier.height(4.dp))
+            OutlinedButton(onClick = { focus.clearFocus(); onOpenHelper() }) { Text("Soy el ayudante") }
         }
 
         // --- Icono de la aplicación (desplegable)
@@ -381,36 +293,6 @@ private fun Expandable(title: String, content: @Composable ColumnScope.() -> Uni
         }
         if (open) content()
     }
-}
-
-/**
- * Caja numérica de 0 a [max] (2 dígitos como máximo): se puede borrar y escribir con normalidad. El valor se guarda al
- * teclear (vacío cuenta como 0) y al salir de la caja se muestra con dos cifras.
- */
-@Composable
-private fun NumberField(value: Int, max: Int, width: Dp, onValue: (Int) -> Unit) {
-    val focus = LocalFocusManager.current
-    var text by remember { mutableStateOf(pad2(value)) }
-    var focused by remember { mutableStateOf(false) }
-    // Si el valor cambia desde fuera (p. ej. se quita otra fila), se refleja
-    LaunchedEffect(value) { if ((text.toIntOrNull() ?: 0) != value) text = pad2(value) }
-    OutlinedTextField(
-        value = text,
-        onValueChange = { raw ->
-            val digits = raw.filter { it.isDigit() }.take(2)
-            val n = (digits.toIntOrNull() ?: 0).coerceAtMost(max)
-            // Si se pasa del máximo (p. ej. 75 segundos) se queda en el máximo
-            text = if ((digits.toIntOrNull() ?: 0) > max) pad2(n) else digits
-            onValue(n)
-        },
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(onDone = { focus.clearFocus() }),
-        modifier = Modifier.width(width).onFocusChanged {
-            if (focused && !it.isFocused) text = pad2(text.toIntOrNull() ?: 0)
-            focused = it.isFocused
-        },
-    )
 }
 
 @Composable

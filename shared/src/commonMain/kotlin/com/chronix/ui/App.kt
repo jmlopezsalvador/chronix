@@ -15,7 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.magicfriends.client.ClientEvent
 
-private enum class Screen { STOPWATCH, SETTINGS, INSTRUCTIONS, MAGIC_FRIENDS }
+private enum class Screen { STOPWATCH, SETTINGS, INSTRUCTIONS, MAGIC_FRIENDS, HELPER }
 
 /**
  * Raíz Compose común (Android e iOS). Muestra el cronómetro con el look and feel elegido y, con una pulsación larga
@@ -84,9 +84,12 @@ fun ChronixRoot(store: SettingsStore) {
                 onShowGuide = { guideOpen = true },
                 onOpenInstructions = { screen = Screen.INSTRUCTIONS },
                 onOpenMagicFriends = { screen = Screen.MAGIC_FRIENDS },
+                onOpenHelper = { screen = Screen.HELPER },
             )
             Screen.INSTRUCTIONS -> InstructionsScreen(onBack = { screen = Screen.SETTINGS })
             Screen.MAGIC_FRIENDS -> MagicFriendsScreen(controller = magic, onBack = { screen = Screen.SETTINGS })
+            // El ayudante crea su propia conexión al abrir la pantalla y la cierra al salir (sin pantalla no hay red)
+            Screen.HELPER -> HelperScreen(prefs = store.prefs, onBack = { screen = Screen.SETTINGS })
         }
 
         if (guideOpen) {

@@ -72,7 +72,10 @@ val generateMagicFriendsConfig by tasks.registering {
             internal object MagicFriendsConfig {
                 const val SERVER_URL: String = ${literal(serverUrl)}
                 const val APP_KEY: String = ${literal(appKey)}
+                /** El mago necesita URL y appKey (se registra con ella). */
                 val configured: Boolean get() = SERVER_URL.isNotBlank() && APP_KEY.isNotBlank()
+                /** El ayudante solo necesita la URL. */
+                val helperAvailable: Boolean get() = SERVER_URL.isNotBlank()
             }
             """.trimIndent() + "\n",
             Charsets.UTF_8,

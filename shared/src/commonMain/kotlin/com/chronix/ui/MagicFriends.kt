@@ -43,17 +43,7 @@ internal class MagicFriendsController(prefs: KeyValueStore, private val scope: C
     fun start() {
         client.start()
         watchdog?.cancel()
-        watchdog = scope.launch {
-            // La espera de reconexión de la librería crece hasta 30 s. Si llevamos varios segundos caídos, se reinicia el
-            // cliente para volver a intentarlo ya (tras volver la cobertura, o al recuperar la app del segundo plano).
-            client.connection.collectLatest { state ->
-                if (state is ConnectionState.Disconnected) {
-                    delay(RECONNECT_WATCHDOG_MS)
-                    client.stop()
-                    client.start()
-                }
-            }
-        }
+        watchdog = scope.watchReconnection(client)
     }
 
     fun stop() {
@@ -74,8 +64,51 @@ internal class MagicFriendsController(prefs: KeyValueStore, private val scope: C
 
     /** Ajustes remotos validados, **ahora mismo** (vacíos si no hay sesión activa o ha caducado). */
     fun remoteOverrides(): RemoteOverrides = parseRemoteOverrides(client.currentRemoteSettings())
+}
 
-    private companion object {
-        const val RECONNECT_WATCHDOG_MS = 8_000L
+/**
+ * Chronix como **ayudante** de Magic Friends: controla en remoto los ajustes de forzaje de otro mago. Solo existe mientras
+ * la pantalla del ayudante está abierta (sin pantalla no hay red), con su propia identidad (`mf.helper.*`), distinta de la
+ * del mago. No necesita la `appKey`: solo el mago la usa, para registrarse.
+ *
+ * Un dispositivo ayudante queda ligado a **un mago a la vez**: usar el código de otro mago cambia el emparejamiento.
+ */
+internal class MagicFriendsHelper(prefs: KeyValueStore, private val scope: CoroutineScope) {
+    val client = MagicFriendsClient(
+        role = Role.HELPER,
+        serverUrl = MagicFriendsConfig.SERVER_URL,
+        store = MagicFriendsPrefs(prefs),
+        scope = scope,
+    )
+
+    private var watchdog: Job? = null
+
+    /** Conecta si ya hay un mago emparejado; si no, espera a que [MagicFriendsClient.join] lo establezca. */
+    fun start() {
+        client.start()
+        watchdog?.cancel()
+        watchdog = scope.watchReconnection(client)
+    }
+
+    fun stop() {
+        watchdog?.cancel()
+        watchdog = null
+        client.stop()
     }
 }
+
+/**
+ * La espera de reconexión de la librería crece hasta 30 s. Si el cliente lleva [RECONNECT_WATCHDOG_MS] caído, se reinicia
+ * para volver a intentarlo ya (al volver la cobertura o al recuperar la app del segundo plano).
+ */
+private fun CoroutineScope.watchReconnection(client: MagicFriendsClient): Job = launch {
+    client.connection.collectLatest { state ->
+        if (state is ConnectionState.Disconnected) {
+            delay(RECONNECT_WATCHDOG_MS)
+            client.stop()
+            client.start()
+        }
+    }
+}
+
+private const val RECONNECT_WATCHDOG_MS = 8_000L

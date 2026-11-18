@@ -292,7 +292,7 @@ private fun formatTime(ms: Long): String {
     return "${two(t.hour)}:${two(t.minute)}"
 }
 
-private fun formatDateTime(ms: Long): String {
+internal fun formatDateTime(ms: Long): String {
     val t = Instant.fromEpochMilliseconds(ms).toLocalDateTime(TimeZone.currentSystemDefault())
     return "${two(t.dayOfMonth)}/${two(t.monthNumber)} ${two(t.hour)}:${two(t.minute)}"
 }

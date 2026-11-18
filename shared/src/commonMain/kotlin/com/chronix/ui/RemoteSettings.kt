@@ -4,9 +4,14 @@ import com.chronix.domain.ForceMode
 import com.chronix.domain.ForceTarget
 import com.chronix.domain.StopSubmode
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.longOrNull
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 
 /**
  * Capa de ajustes **remotos** de Magic Friends (lado mago). El ayudante solo puede cambiar los ajustes de predicción
@@ -76,6 +81,37 @@ fun parseRemoteOverrides(remote: JsonObject): RemoteOverrides {
         stopFullCs = number(RemoteKeys.STOP_FULL_CS, 0L, STOP_FULL_CS_MAX),
     )
 }
+
+// ---- Lado del ayudante: qué manda y cómo lee lo que hay en el servidor ----
+
+/**
+ * El **plan completo** del ayudante: siempre las seis claves, así el ayudante ve exactamente lo que hará el móvil del mago.
+ * Es justo lo que [parseRemoteOverrides] acepta en el móvil del mago (los números se limitan igual que allí).
+ */
+fun ForcingValues.toPatch(): JsonObject = buildJsonObject {
+    put(RemoteKeys.FORCE_MODE, forceMode.name)
+    put(RemoteKeys.FORCE_TARGET, forceTarget.name)
+    put(RemoteKeys.STOP_SUBMODE, stopSubmode.name)
+    putJsonArray(RemoteKeys.FORCED_CS) { forcedCs.forEach { add(it.coerceIn(0, 99)) } }
+    put(RemoteKeys.STOP_CENTIS, stopCentis.coerceIn(0, 99))
+    put(RemoteKeys.STOP_FULL_CS, stopFullCs.coerceIn(0L, STOP_FULL_CS_MAX))
+}
+
+/** «Soltar el control»: un `null` por clave quita todos los overrides y el móvil del mago vuelve a sus ajustes locales. */
+fun releasePatch(): JsonObject = buildJsonObject { RemoteKeys.all.forEach { put(it, JsonNull) } }
+
+/** ¿Hay un plan completo del ayudante en el servidor? (las seis claves presentes: el móvil del mago usa su plan). */
+fun JsonObject.hasFullForcingPlan(): Boolean = RemoteKeys.all.all { key -> this[key].let { it != null && it !is JsonNull } }
+
+/** Los valores remotos validados sobre unos de partida ([base]) para las claves que falten. */
+fun RemoteOverrides.toForcingValues(base: ForcingValues = ForcingValues()): ForcingValues = ForcingValues(
+    forceMode = forceMode ?: base.forceMode,
+    forceTarget = forceTarget ?: base.forceTarget,
+    forcedCs = forcedCs ?: base.forcedCs,
+    stopSubmode = stopSubmode ?: base.stopSubmode,
+    stopCentis = stopCentis ?: base.stopCentis,
+    stopFullCs = stopFullCs ?: base.stopFullCs,
+)
 
 /** Ajustes efectivos: `remoto[clave] ?: local[clave]` solo para las claves de la lista blanca. */
 fun AppSettings.withRemote(o: RemoteOverrides): AppSettings = copy(
