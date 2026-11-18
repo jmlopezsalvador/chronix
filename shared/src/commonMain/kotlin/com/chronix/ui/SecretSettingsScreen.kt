@@ -59,6 +59,7 @@ fun SecretSettingsScreen(
     appearance: AppAppearance,
     onShowGuide: () -> Unit,
     onOpenInstructions: () -> Unit,
+    onOpenMagicFriends: () -> Unit,
 ) {
     val focus = LocalFocusManager.current
     var warning by remember { mutableStateOf<String?>(null) }
@@ -231,6 +232,29 @@ fun SecretSettingsScreen(
             OutlinedButton(onClick = { focus.clearFocus(); onChange(settings.copy(secretHoldMs = (settings.secretHoldMs + 100).coerceAtMost(5000))) }) { Text("+") }
         }
 
+        // --- Magic Friends: un ayudante cambia en remoto los ajustes de forzaje. Solo con el interruptor activo se abre la red.
+        val mfConfigured = MagicFriendsConfig.configured
+        val mfOn = settings.magicFriendsEnabled && mfConfigured
+        Section("Magic Friends")
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text("Usar Magic Friends", color = if (mfConfigured) Color.Black else Color.Gray)
+                Text(
+                    if (mfConfigured) "Un ayudante puede cambiar en remoto los ajustes de forzaje. Solo con esto activado se usa la red."
+                    else "Esta compilación no tiene configurado el servicio.",
+                    fontSize = 13.sp, color = Color.Gray,
+                )
+            }
+            Switch(
+                checked = mfOn, enabled = mfConfigured,
+                onCheckedChange = { on -> focus.clearFocus(); onChange(settings.copy(magicFriendsEnabled = on)) },
+            )
+        }
+        if (mfOn) {
+            Spacer(Modifier.height(4.dp))
+            OutlinedButton(onClick = { focus.clearFocus(); onOpenMagicFriends() }) { Text("Sesiones") }
+        }
+
         // --- Icono de la aplicación (desplegable)
         Spacer(Modifier.height(8.dp))
         Expandable("Icono de la aplicación") {
@@ -390,7 +414,7 @@ private fun NumberField(value: Int, max: Int, width: Dp, onValue: (Int) -> Unit)
 }
 
 @Composable
-private fun Section(title: String) {
+internal fun Section(title: String) {
     Spacer(Modifier.height(24.dp))
     Text(title, fontSize = 16.sp, color = Color(0xFF3F3FE0))
     Spacer(Modifier.height(6.dp))

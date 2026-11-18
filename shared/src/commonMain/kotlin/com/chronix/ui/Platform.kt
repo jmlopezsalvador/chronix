@@ -30,3 +30,7 @@ expect fun rememberAppAppearance(): AppAppearance
 /** Devuelve una función que hace vibrar el móvil (pulso corto y firme). */
 @Composable
 expect fun rememberVibrate(): () -> Unit
+
+/** Devuelve una función que hace vibrar el móvil con un pulso suave y breve (aviso discreto de Magic Friends). */
+@Composable
+expect fun rememberSoftVibrate(): () -> Unit

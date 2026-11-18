@@ -34,4 +34,7 @@ class StopwatchState {
     fun lap() { sw.lap(monotonicNowMs()); touch() }
     fun reset() { sw.reset(); touch() }
     fun resetAndArm(plan: ForcePlan) { sw.resetAndArm(plan); touch() }
+
+    /** Arma con un plan vivo: se consulta en cada vuelta y en cada Parar (cambios remotos hasta el último instante). */
+    fun resetAndArm(planSource: () -> ForcePlan) { sw.resetAndArm(planSource); touch() }
 }

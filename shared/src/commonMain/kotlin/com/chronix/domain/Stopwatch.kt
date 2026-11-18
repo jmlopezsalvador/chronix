@@ -42,6 +42,11 @@ class ForcePlan(
  * **Regla general:** lo que se fuerza se sustituye siempre, tal cual (el contador completo puede incluso retroceder). Lo
  * que NO se fuerza nunca viaja atrás: cuando solo se fuerzan centésimas, los minutos y segundos se quedan en los que
  * estamos o pasan al siguiente.
+ *
+ * **Cambio en vivo (Magic Friends):** «armado» es un estado propio; el plan **no se copia al armar**, se pide a su origen
+ * en el momento de usarlo (en cada vuelta y en cada Parar). Así un cambio remoto hecho después de armar (incluido el
+ * modo) vale hasta el último instante. La vuelta n usa la posición n de la lista. Si el origen falla, se usa el último
+ * plan leído: el efecto nunca debe fallar.
  */
 class Stopwatch {
     var phase: Phase = Phase.IDLE
@@ -51,19 +56,29 @@ class Stopwatch {
 
     private var baseMs = 0L
     private var startedAt = 0L
-    private var forced: List<Int> = emptyList()
-    private var forcedIndex = 0
-    private var target = ForceTarget.TOTAL
-    private var mode = ForceMode.LAPS
-    private var stopSubmode = StopSubmode.CENTIS
-    private var stopValue = 0L
-    private var stopPending = false // el forzaje del Parar sigue sin consumir
+
+    /** De dónde sale el plan de forzaje; null = sin armar. Se consulta en cada uso (ver [currentPlan]). */
+    private var planSource: (() -> ForcePlan)? = null
+    private var lastPlan: ForcePlan? = null // último plan leído con éxito (si el origen falla)
 
     val running: Boolean get() = phase == Phase.RUNNING
 
     /** True mientras queden posiciones por forzar (vueltas o paradas). Solo para lógica/tests: la UI nunca debe mostrarlo. */
     val forcingArmed: Boolean
-        get() = if (mode == ForceMode.STOPWATCH) stopPending else forcedIndex < forced.size
+        get() {
+            val plan = currentPlan() ?: return false
+            return if (plan.mode == ForceMode.STOPWATCH) true else laps.size < plan.lapCs.size
+        }
+
+    /** Plan vigente ahora mismo (null si no está armado). Un fallo del origen no rompe nada: vale el último plan leído. */
+    private fun currentPlan(): ForcePlan? {
+        val source = planSource ?: return null
+        return try {
+            source().also { lastPlan = it }
+        } catch (e: Exception) {
+            lastPlan
+        }
+    }
 
     fun elapsedMs(nowMs: Long): Long = if (running) baseMs + (nowMs - startedAt) else baseMs
 
@@ -81,16 +96,18 @@ class Stopwatch {
     fun stop(nowMs: Long) {
         if (!running) return
         baseMs = elapsedMs(nowMs)
-        if (mode == ForceMode.STOPWATCH && stopPending) {
-            stopPending = false
+        val plan = currentPlan()
+        if (plan != null && plan.mode == ForceMode.STOPWATCH) {
+            // El forzaje del Parar actúa una sola vez y deja el cronómetro normal: se desarma del todo
+            planSource = null
             val real = baseMs / 10
             val last = laps.lastOrNull()?.totalCs ?: 0L
-            baseMs = if (stopSubmode == StopSubmode.FULL) {
+            baseMs = if (plan.stopSubmode == StopSubmode.FULL) {
                 // Contador completo: se fuerzan minutos, segundos y centésimas, así que se sustituye tal cual (aunque retroceda)
-                stopValue * 10
+                plan.stopFullCs.coerceAtLeast(0L) * 10
             } else {
                 // Solo centésimas: los minutos y segundos no se fuerzan y nunca viajan atrás (al alza)
-                forceTotal(real, last, stopValue.toInt()) * 10
+                forceTotal(real, last, plan.stopCentis.coerceIn(0, 99)) * 10
             }
         }
         phase = Phase.PAUSED
@@ -102,9 +119,10 @@ class Stopwatch {
         val real = elapsedCs(nowMs)
         val lapCs: Long
         val total: Long
-        if (mode == ForceMode.LAPS && forcedIndex < forced.size) {
-            val f = forced[forcedIndex++]
-            if (target == ForceTarget.LAP) {
+        val plan = currentPlan()
+        if (plan != null && plan.mode == ForceMode.LAPS && laps.size < plan.lapCs.size) {
+            val f = plan.lapCs[laps.size].coerceIn(0, 99) // la vuelta n usa la posición n
+            if (plan.lapTarget == ForceTarget.LAP) {
                 lapCs = forceLap(real - prev, f)
                 total = prev + lapCs
             } else {
@@ -123,27 +141,25 @@ class Stopwatch {
         phase = Phase.IDLE
         baseMs = 0L
         laps = emptyList()
-        forced = emptyList()
-        forcedIndex = 0
-        mode = ForceMode.LAPS
-        stopValue = 0L
-        stopPending = false
+        planSource = null
+        lastPlan = null
     }
 
     /** Restablecer + armar el forzaje por vueltas con la lista de centésimas (cada valor se limita a 0..99). */
     fun resetAndArm(forcedCs: List<Int>, target: ForceTarget = ForceTarget.TOTAL) =
         resetAndArm(ForcePlan(ForceMode.LAPS, lapCs = forcedCs, lapTarget = target))
 
-    /** Restablecer + armar el forzaje del [plan]. */
-    fun resetAndArm(plan: ForcePlan) {
+    /** Restablecer + armar el forzaje del [plan] (fijo). */
+    fun resetAndArm(plan: ForcePlan) = resetAndArm { plan }
+
+    /**
+     * Restablecer + armar con un plan **vivo**: [planSource] se consulta en cada vuelta y en cada Parar (no al armar), de
+     * modo que los cambios hechos después de armar valen hasta el último instante.
+     */
+    fun resetAndArm(planSource: () -> ForcePlan) {
         reset()
-        mode = plan.mode
-        forced = plan.lapCs.map { it.coerceIn(0, 99) }
-        target = plan.lapTarget
-        stopSubmode = plan.stopSubmode
-        stopValue = if (plan.stopSubmode == StopSubmode.CENTIS) plan.stopCentis.coerceIn(0, 99).toLong()
-        else plan.stopFullCs.coerceAtLeast(0L)
-        stopPending = plan.mode == ForceMode.STOPWATCH
+        this.planSource = planSource
+        currentPlan() // semilla: si el origen fallara más tarde, vale este plan
     }
 
     companion object {

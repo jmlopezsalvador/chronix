@@ -31,18 +31,30 @@ actual fun SystemBarsEffect(darkBackground: Boolean) {
     }
 }
 
+private fun vibratorOf(context: Context): Vibrator? = if (Build.VERSION.SDK_INT >= 31) {
+    (context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager)?.defaultVibrator
+} else {
+    @Suppress("DEPRECATION")
+    context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+}
+
 @Composable
 actual fun rememberVibrate(): () -> Unit {
     val context = LocalContext.current.applicationContext
     return remember(context) {
         {
-            val vibrator: Vibrator? = if (Build.VERSION.SDK_INT >= 31) {
-                (context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as? VibratorManager)?.defaultVibrator
-            } else {
-                @Suppress("DEPRECATION")
-                context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
-            }
-            vibrator?.vibrate(VibrationEffect.createOneShot(120L, VibrationEffect.DEFAULT_AMPLITUDE))
+            vibratorOf(context)?.vibrate(VibrationEffect.createOneShot(120L, VibrationEffect.DEFAULT_AMPLITUDE))
+        }
+    }
+}
+
+@Composable
+actual fun rememberSoftVibrate(): () -> Unit {
+    val context = LocalContext.current.applicationContext
+    return remember(context) {
+        {
+            // Pulso corto y de poca amplitud (en móviles sin control de amplitud sigue siendo breve)
+            vibratorOf(context)?.vibrate(VibrationEffect.createOneShot(40L, 60))
         }
     }
 }
@@ -89,4 +101,5 @@ class SharedPrefsStore(context: Context) : KeyValueStore {
     override fun putString(key: String, value: String) = p.edit().putString(key, value).apply()
     override fun putBoolean(key: String, value: Boolean) = p.edit().putBoolean(key, value).apply()
     override fun putLong(key: String, value: Long) = p.edit().putLong(key, value).apply()
+    override fun remove(key: String) = p.edit().remove(key).apply()
 }

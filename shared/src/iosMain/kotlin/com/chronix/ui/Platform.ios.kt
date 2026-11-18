@@ -23,6 +23,15 @@ actual fun rememberVibrate(): () -> Unit = remember {
 }
 
 @Composable
+actual fun rememberSoftVibrate(): () -> Unit = remember {
+    {
+        val generator = UIImpactFeedbackGenerator(style = UIImpactFeedbackStyle.UIImpactFeedbackStyleLight)
+        generator.prepare()
+        generator.impactOccurred()
+    }
+}
+
+@Composable
 actual fun rememberAppAppearance(): AppAppearance = remember { IosAppearance() }
 
 /**
@@ -63,4 +72,5 @@ class UserDefaultsStore : KeyValueStore {
     override fun putString(key: String, value: String) = d.setObject(value, key)
     override fun putBoolean(key: String, value: Boolean) = d.setBool(value, key)
     override fun putLong(key: String, value: Long) = d.setInteger(value, key)
+    override fun remove(key: String) = d.removeObjectForKey(key)
 }

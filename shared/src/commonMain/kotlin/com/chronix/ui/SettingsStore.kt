@@ -13,7 +13,11 @@ interface KeyValueStore {
     fun putString(key: String, value: String)
     fun putBoolean(key: String, value: Boolean)
     fun putLong(key: String, value: Long)
+    fun remove(key: String)
 }
+
+/** Máximo del contador completo forzado al parar: 99 min 59 s 99 cs, en centésimas. Lo comparten los ajustes locales y los remotos. */
+const val STOP_FULL_CS_MAX: Long = 99L * 6000 + 59 * 100 + 99
 
 /** Ajustes secretos de la app. */
 data class AppSettings(
@@ -41,22 +45,31 @@ data class AppSettings(
     val nameId: String = AppIconCatalog.DEFAULT_NAME,
     /** Mostrar la guía de inicio al abrir la app. Activa al instalar; se puede desactivar al final de la guía o en ajustes. */
     val showGuide: Boolean = true,
+    /** Usar Magic Friends en este móvil: si está activo, un ayudante puede cambiar en remoto los ajustes de forzaje. Solo con esto se abre la red. */
+    val magicFriendsEnabled: Boolean = false,
 )
 
 /** ¿Se ven los totales? Depende del ajuste y de que el diseño los tenga (el iPhone no). */
 fun AppSettings.totalsVisible(): Boolean = showTotals && ClockThemes.byId(themeId).showsTotal
 
-/** Plan de forzaje de estos ajustes. Con los totales ocultos, «total» no existe y se fuerza la vuelta. */
-fun AppSettings.forcePlan(): ForcePlan = ForcePlan(
-    mode = forceMode,
-    lapCs = forcedCs,
-    lapTarget = if (totalsVisible()) forceTarget else ForceTarget.LAP,
-    stopSubmode = stopSubmode,
-    stopCentis = stopCentis,
-    stopFullCs = stopFullCs,
-)
+/**
+ * Plan de forzaje de estos ajustes. Con los totales ocultos, «total» no existe y se fuerza la vuelta.
+ * Si hay ajustes remotos ([remote], Magic Friends activo) se solapan sobre los locales: `remoto[clave] ?: local[clave]`.
+ * Es el único sitio donde se construye el [ForcePlan].
+ */
+fun AppSettings.forcePlan(remote: RemoteOverrides? = null): ForcePlan {
+    val s = if (remote == null) this else withRemote(remote)
+    return ForcePlan(
+        mode = s.forceMode,
+        lapCs = s.forcedCs,
+        lapTarget = if (s.totalsVisible()) s.forceTarget else ForceTarget.LAP,
+        stopSubmode = s.stopSubmode,
+        stopCentis = s.stopCentis,
+        stopFullCs = s.stopFullCs,
+    )
+}
 
-class SettingsStore(private val prefs: KeyValueStore) {
+class SettingsStore(val prefs: KeyValueStore) {
     fun load(): AppSettings {
         val d = AppSettings()
         val forced = prefs.getString("forcedCs")?.let { raw ->
@@ -74,7 +87,8 @@ class SettingsStore(private val prefs: KeyValueStore) {
             forceMode = if (prefs.getString("forceMode") == "STOPWATCH") ForceMode.STOPWATCH else ForceMode.LAPS,
             stopSubmode = if (prefs.getString("stopSubmode") == "FULL") StopSubmode.FULL else StopSubmode.CENTIS,
             stopCentis = prefs.getLong("stopCs", d.stopCentis.toLong()).toInt().coerceIn(0, 99),
-            stopFullCs = prefs.getLong("stopFullCs", d.stopFullCs).coerceIn(0L, 99L * 6000 + 59 * 100 + 99),
+            stopFullCs = prefs.getLong("stopFullCs", d.stopFullCs).coerceIn(0L, STOP_FULL_CS_MAX),
+            magicFriendsEnabled = prefs.getBoolean("mfEnabled", d.magicFriendsEnabled),
         )
     }
 
@@ -91,5 +105,6 @@ class SettingsStore(private val prefs: KeyValueStore) {
         prefs.putString("stopSubmode", s.stopSubmode.name)
         prefs.putLong("stopCs", s.stopCentis.toLong())
         prefs.putLong("stopFullCs", s.stopFullCs)
+        prefs.putBoolean("mfEnabled", s.magicFriendsEnabled)
     }
 }

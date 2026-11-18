@@ -71,6 +71,14 @@ private val guidePages = listOf(
         ),
     ),
     GuidePage(
+        "Magic Friends (opcional)",
+        listOf(
+            "Un ayudante puede cambiar tus números del forzaje desde su móvil, en directo, incluso después de armarlo.",
+            "Se activa en los ajustes con «Usar Magic Friends». Con el interruptor apagado, la app no usa internet.",
+            "Tus ajustes nunca se pisan: con Magic Friends activado vale lo que ponga el ayudante y, en lo que no toque, lo tuyo.",
+        ),
+    ),
+    GuidePage(
         "¡Listo!",
         listOf(
             "Puedes volver a ver esta guía y las instrucciones completas cuando quieras desde los ajustes.",

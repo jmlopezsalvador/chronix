@@ -5,6 +5,7 @@ import com.chronix.domain.ForceTarget
 import com.chronix.domain.StopSubmode
 import com.chronix.ui.AppSettings
 import com.chronix.ui.KeyValueStore
+import com.chronix.ui.MagicFriendsPrefs
 import com.chronix.ui.SettingsStore
 import com.chronix.ui.forcePlan
 import com.chronix.ui.totalsVisible
@@ -20,6 +21,7 @@ class SettingsStoreTest {
         override fun putString(key: String, value: String) { m[key] = value }
         override fun putBoolean(key: String, value: Boolean) { m[key] = value }
         override fun putLong(key: String, value: Long) { m[key] = value }
+        override fun remove(key: String) { m.remove(key) }
     }
 
     @Test fun defaultsHaveFourForcedLapsAndOneAndAHalfSeconds() {
@@ -106,5 +108,26 @@ class SettingsStoreTest {
         val store = SettingsStore(MemoryStore())
         store.save(AppSettings(forcedCs = emptyList()))
         assertEquals(emptyList(), store.load().forcedCs)
+    }
+
+    @Test fun magicFriendsIsOffByDefaultAndSurvivesRoundTrip() {
+        val store = SettingsStore(MemoryStore())
+        assertEquals(false, store.load().magicFriendsEnabled)
+        store.save(AppSettings(magicFriendsEnabled = true))
+        assertEquals(true, store.load().magicFriendsEnabled)
+        store.save(AppSettings(magicFriendsEnabled = false))
+        assertEquals(false, store.load().magicFriendsEnabled)
+    }
+
+    @Test fun magicFriendsStoreAdapterReadsWritesAndRemovesWithoutTouchingTheSettings() {
+        val mem = MemoryStore()
+        val settings = SettingsStore(mem)
+        settings.save(AppSettings(secretHoldMs = 2000L))
+        val mf = MagicFriendsPrefs(settings.prefs)
+        mf.putString("mf.mago.deviceId", "dev-1")
+        assertEquals("dev-1", mf.getString("mf.mago.deviceId"))
+        mf.remove("mf.mago.deviceId")
+        assertEquals(null, mf.getString("mf.mago.deviceId"))
+        assertEquals(2000L, settings.load().secretHoldMs) // los ajustes de Chronix siguen intactos
     }
 }
