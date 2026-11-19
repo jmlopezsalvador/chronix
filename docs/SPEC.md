@@ -91,51 +91,62 @@ centésimas** de las vueltas y de la parada a valores preparados de antemano.
 ## 9. Magic Friends: ajustes en remoto (decisiones del 2026-11-18)
 Un **ayudante** cambia en directo, desde su móvil, los ajustes de predicción de este móvil (el **mago**). Servicio y librería
 cliente en el repo hermano `magicfriends` (ver su `docs/DISENO.md` y `protocol/PROTOCOLO.md`; son la fuente de verdad del
-protocolo). Lo de aquí es lo propio de Chronix. **Fase 1 (hecha): Chronix como mago.** **Fase 2 (hecha): Chronix como ayudante**
-(R40-R45), reutilizando la pantalla de forzaje. Fase 3 (pendiente): QR, cambiar la caducidad de una sesión y más.
+protocolo). Lo de aquí es lo propio de Chronix. **Fase 1 (hecha): Chronix como mago.** **Fase 2 (hecha): Chronix como ayudante**,
+con una **lista de conexiones** (MF11–MF18) sobre la librería 0.2, reutilizando la pantalla de forzaje. Fase 3 (pendiente): QR y cambiar la
+caducidad de una sesión ya creada.
 
-- R30. **Interruptor «Usar Magic Friends»** en los ajustes (por defecto **apagado**). Es el interruptor *del móvil*: usar o no lo remoto.
+- MF1. **Interruptor «Usar Magic Friends»** en los ajustes (por defecto **apagado**). Es el interruptor *del móvil*: usar o no lo remoto.
   Solo con él activo se crea el cliente, se abre la red y se genera la identidad; apagado no hay red, ni cliente, ni identidad.
-  Si la compilación no lleva configuración (R38), el interruptor sale desactivado.
-- R31. **Capa remota separada de los ajustes locales** (los remotos nunca los machacan). Lista blanca de claves remotas
+  Si la compilación no lleva configuración (MF9), el interruptor sale desactivado.
+- MF2. **Capa remota separada de los ajustes locales** (los remotos nunca los machacan). Lista blanca de claves remotas
   (`RemoteKeys`): `forceMode`, `forceTarget`, `forcedCs`, `stopSubmode`, `stopCentis`, `stopFullCs`. **Nunca remotos:** aspecto, icono,
   nombre, `secretHoldMs`, guía, `showTotals` (el mago decide qué se ve: sin totales visibles se fuerza la vuelta aunque el ayudante pida el total).
   **Efectivo = `remoto[clave] ?: local[clave]`** con Magic Friends activo; si no, solo el local. El solapado entra en `AppSettings.forcePlan(remote)`,
   único sitio donde se construye el `ForcePlan`.
-- R32. **Formato en el cable** (JSON Merge Patch; un `null` quita el override y vuelve el local): `forceMode` `"LAPS"|"STOPWATCH"`;
+- MF3. **Formato en el cable** (JSON Merge Patch; un `null` quita el override y vuelve el local): `forceMode` `"LAPS"|"STOPWATCH"`;
   `forceTarget` `"LAP"|"TOTAL"`; `stopSubmode` `"CENTIS"|"FULL"`; `forcedCs` array de enteros 0..99 (una posición por vuelta);
   `stopCentis` entero 0..99; `stopFullCs` entero 0..`STOP_FULL_CS_MAX` (centésimas de segundo). Validación como en `SettingsStore.load()`:
   los números fuera de rango se **limitan**; un tipo erróneo, un enum desconocido o un `forcedCs` con algún elemento que no es número se **ignoran**
   (esa clave la decide el local; así las posiciones de las vueltas nunca se desplazan). Un `forcedCs` vacío es válido (sin forzaje por vueltas).
-- R33. **Cambio en vivo hasta el último instante.** Armar (pulsación larga en Restablecer) solo marca «armado»; el plan **no se copia**: el cronómetro
+- MF4. **Cambio en vivo hasta el último instante.** Armar (pulsación larga en Restablecer) solo marca «armado»; el plan **no se copia**: el cronómetro
   lo pide a su origen en cada vuelta y en cada Parar (`Stopwatch.resetAndArm { … }`). El ayudante puede cambiar valores, e incluso el modo, tras armar.
   La vuelta n usa la posición n de la lista. El forzaje del Parar actúa una vez y desarma del todo. Si el origen falla, vale el último plan leído.
-- R34. **Sin red el efecto no falla.** La librería guarda la última instantánea remota (y respeta la caducidad con el reloj local); se usa al arrancar y sin conexión.
+- MF5. **Sin red el efecto no falla.** La librería guarda la última instantánea remota (y respeta la caducidad con el reloj local); se usa al arrancar y sin conexión.
   La conexión se reintenta sola y un vigilante la reinicia si lleva 8 s caída. Los indicadores de conexión solo existen en la pantalla secreta de Magic Friends.
-- R35. **Aviso discreto:** al llegar un cambio del ayudante (`ClientEvent.RemotePatch`) vibra un pulso suave y breve (distinto del pulso firme de armar).
-- R36. **Pantalla «Sesiones»** (fondo blanco como los ajustes): estado de la conexión; crear sesión (nombre ≤ 40, caducidad *Sin caducidad / 1 h / 24 h / 7 días*);
+- MF6. **Aviso discreto:** vibra un pulso suave y breve (distinto del pulso firme de armar) cuando cambia lo que va a pasar: llega un cambio del ayudante
+  (`ClientEvent.RemotePatch`) o un estado nuevo de la sesión activa (`ClientEvent.SettingsChanged`: al activarla con plantilla, al resincronizar o al salirse el ayudante).
+- MF7. **Pantalla «Sesiones»** (fondo blanco como los ajustes): estado de la conexión; crear sesión (nombre ≤ 40, caducidad *Sin caducidad / 1 h / 24 h / 7 días*);
   código de emparejamiento (6 caracteres, un solo uso, 10 min) con «Nuevo código» (sirve para re-emparejar: quien lo use sustituye al ayudante anterior);
   solicitudes pendientes (Aceptar / Rechazar); por sesión: Activar / Pausar, Revocar (definitivo) y Borrar, con confirmación en los destructivos.
   **Solo una sesión activa a la vez**; *pausada* no es *caducada* ni *revocada*. Cambiar la caducidad de una sesión ya creada y el QR quedan para la fase 3.
-- R37. **Borrar** una sesión reconecta el cliente (`MagicFriendsController.refresh`): el servidor solo envía un `ack` al mago y la librería 0.1.0 no la retira de su lista
-  ni deja de aplicar sus ajustes hasta reconectar. Se quita cuando la librería lo corrija.
-- R38. **Configuración sensible** (el repo es público): URL del servidor y `appKey` **no** van en el código ni en ficheros versionados. Gradle los lee de
+- MF8. **Borrar** una sesión la retira al instante de la lista y deja de aplicar sus ajustes remotos (lo hace la librería 0.2; con la 0.1 hacía falta reconectar).
+- MF9. **Configuración sensible** (el repo es público): URL del servidor y `appKey` **no** van en el código ni en ficheros versionados. Gradle los lee de
   `-Pmagicfriends.serverUrl` / `-Pmagicfriends.appKey`, del entorno (`MAGICFRIENDS_SERVER_URL` / `MAGICFRIENDS_APP_KEY`, secretos del repo en Actions) o de
   `local.properties`, y genera `MagicFriendsConfig.kt` en `build/`. Sin valores la app compila igual, con Magic Friends desactivado. La `appKey` va dentro del binario
   (protección débil, solo frena altas casuales de magos).
-- R39. **Plataformas:** Android declara el permiso `INTERNET` (generado por `tools/gen_icons.py`). iOS no necesita permisos (HTTPS/WSS). Las instrucciones y la guía de inicio explican Magic Friends.
+- MF10. **Plataformas:** Android declara el permiso `INTERNET` (generado por `tools/gen_icons.py`). iOS no necesita permisos (HTTPS/WSS). Las instrucciones y la guía de inicio explican Magic Friends.
 
-### Chronix como ayudante (fase 2)
-- R40. **Pantalla del ayudante:** botón «Soy el ayudante» en los ajustes (visible si la compilación lleva la URL del servidor; no depende del interruptor del mago ni necesita la `appKey`).
-  Su conexión y su identidad (`mf.helper.*`, distinta de la del mago) **solo existen mientras la pantalla está abierta**: sin pantalla, sin red. Un dispositivo ayudante queda ligado
-  a **un mago a la vez** (usar el código de otro mago cambia el emparejamiento). Un mismo móvil puede ser mago y ayudante.
-- R41. **Unirse:** código de 6 caracteres + nombre (≤ 24, lo ve el mago) → solicitud pendiente («Esperando a que el mago la acepte…»). El emparejamiento sobrevive a reiniciar la app.
-  Errores traducidos (código no válido o ya usado, demasiados intentos, sesión caducada o llena, sin conexión) y avisos (solicitud rechazada, acceso revocado, sesión borrada, sustituido por otro ayudante).
-- R42. **Editor reutilizado:** `ForcingEditor` es el mismo bloque de forzaje de los ajustes locales, parametrizado por `ForcingValues` (las seis claves de la lista blanca), con textos propios del ayudante.
-  «Tiempo total» siempre se puede elegir; si el móvil del mago no muestra totales, allí se fuerza la vuelta (R31).
-- R43. **Plan completo y envío explícito** (decidido el 2026-11-18): el ayudante manda siempre las **seis claves** (`ForcingValues.toPatch()`, exactamente lo que acepta `parseRemoteOverrides`), con el botón
-  **«Enviar»** y nunca por tecla (así no llegan valores a medias ni vibraciones repetidas al mago). Estado visible: «Todavía no has enviado tu plan: el móvil del mago usa sus propios ajustes» o «Controlando…
-  (rev N)»; una vez controlando, «Enviar» solo se habilita con cambios. **«Soltar el control»** manda `null` en las seis claves y el móvil del mago vuelve a sus ajustes. El borrador sigue lo que haya
-  en el servidor mientras el ayudante no lo toque.
-- R44. **Estado de la sesión:** solo se envía con la sesión *activa* y con conexión; si está pausada o caducada se puede ir preparando el plan, pero «Enviar» y «Soltar» quedan deshabilitados y se dice por qué.
-- R45. Limitaciones: no hay «abandonar la sesión» (la librería no lo ofrece; basta con unirse con otro código); cambiar la caducidad de una sesión y el QR, para la fase 3.
+### Chronix como ayudante: lista de conexiones (fase 2, decisiones del 2026-11-19)
+- MF11. **Pantalla del ayudante** («Soy el ayudante» en los ajustes; visible si la compilación lleva la URL del servidor; no depende del interruptor del mago ni necesita la `appKey`).
+  Dos niveles: la **lista de conexiones** y **una conexión**. Sin pantalla no hay red: en la lista solo se usa internet al unirse o al salir de una conexión; al entrar en una se abre
+  su conexión (un cliente por mago, librería 0.2) y se cierra al volver. Un mismo móvil puede ser mago y ayudante. La identidad del ayudante (`mf.helper.*`) es única por dispositivo y la
+  comparten todos los magos.
+- MF12. **Lista de conexiones** (el espejo de la lista de sesiones del mago): cada sesión a la que el ayudante se une con un código, **del mismo mago o de varios**, queda en una lista local
+  (`mfh.connections`: mago, sesión, nombre, último estado y cuándo se vio) que sobrevive a reiniciar la app. Cada tarjeta enseña el nombre, el estado (*Esperando a que el mago acepte*, *Activa*,
+  *Pausada*, *Caducada*, o retirada con su motivo: rechazada, borrada, revocada, sustituido por otro ayudante, perdida), cuándo se vio y «Entrar» y «Salir» (o «Quitar»). Orden: activas,
+  pausadas, pendientes, caducadas, retiradas. Al entrar en una conexión se refrescan con el servidor **todas** las sesiones de ese mago; las que el servidor muestra y no estaban en la lista se añaden.
+  Las conexiones hechas con la versión anterior (un solo mago, sin lista) no se importan: hay que volver a unirse.
+- MF13. **Unirse:** código de 6 caracteres + nombre (≤ 24, lo ve el mago). `join` devuelve el mago, la sesión y su nombre, así que la tarjeta aparece al momento como *Esperando a que el mago acepte*.
+  Errores traducidos (código no válido o ya usado, demasiados intentos, sesión caducada o llena, sin conexión).
+- MF14. **Una conexión:** al entrar se conecta con el mago de esa sesión y enseña su **estado** (activa, pausada, caducada…) y **su plantilla**, el plan guardado en esa sesión del servidor. Cada conexión
+  tiene la suya, así que pasar de una a otra no pierde nada. Si ya no es válida (rechazada, retirada, borrada, o el servidor ya no reconoce al dispositivo) se dice por qué y se quita con «Quitar de mi lista».
+- MF15. **Editor reutilizado:** `ForcingEditor` es el mismo bloque de forzaje de los ajustes locales, parametrizado por `ForcingValues` (las seis claves de la lista blanca), con textos propios del ayudante.
+  «Tiempo total» siempre se puede elegir; si el móvil del mago no muestra totales, allí se fuerza la vuelta (MF2).
+- MF16. **Plan completo, envío explícito y plantilla editable en pausa:** el ayudante manda siempre las **seis claves** (`ForcingValues.toPatch()`, exactamente lo que acepta `parseRemoteOverrides`) con
+  un botón y nunca por tecla (así no llegan valores a medias ni vibraciones repetidas al mago). Con la sesión **activa** el botón es **«Enviar»** (llega ya al móvil del mago); con la **pausada**,
+  **«Guardar plantilla»** (se guarda en esa conexión y el mago no la recibe hasta activarla). **«Soltar el control»** / **«Vaciar plantilla»** ponen `null` en las seis claves. Una vez hay plan, el botón
+  solo se habilita con cambios. Con la sesión caducada o sin conexión no se puede guardar nada (se dice por qué). El borrador sigue lo que haya en el servidor mientras el ayudante no lo toque.
+- MF17. **Salir = eliminar la conexión:** «Salir de la sesión» (dentro de la conexión) y «Salir» (en la tarjeta, abriendo una conexión temporal con ese mago) envían `session.leave`: el ayudante deja de ser
+  el controlador, **se borra la plantilla** de esa sesión (el móvil del mago vuelve a sus ajustes y vibra, `SettingsChanged`) y la conexión desaparece de la lista. La sesión sigue siendo del mago. Sin conexión se ofrece
+  quitarla solo de la lista (el mago seguirá viéndole como ayudante). «Quitar» en una conexión *pendiente* también intenta salir en el servidor, por si el mago ya la había aceptado. El ayudante no borra sesiones: eso es del mago.
+- MF18. Limitaciones: la lista es local (otro móvil del mismo ayudante tiene la suya); el estado de cada tarjeta es el de la última vez que se entró en ese mago; el QR y cambiar la caducidad de una sesión, para la fase 3.

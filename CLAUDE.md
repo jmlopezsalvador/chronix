@@ -45,8 +45,11 @@ Temporizador). En la fase 1 solo el **cronómetro** es funcional y realista; las
 - **Magic Friends (SPEC §9):** un ayudante cambia en remoto, en directo, los ajustes de forzaje (lista blanca `RemoteKeys`). Efectivo = `remoto ?: local`; se lee en cada
   vuelta/Parar (plan vivo en `Stopwatch.resetAndArm { … }`), también tras armar. Interruptor del móvil en los ajustes (apagado = sin red). Sin red usa la última instantánea.
   Código: `ui/RemoteSettings.kt` (lista blanca, validación y parche del ayudante), `ui/MagicFriends.kt` (controladores del mago y del ayudante + almacén), `ui/MagicFriendsScreen.kt` (pantalla del mago),
-  `ui/HelperScreen.kt` (pantalla del ayudante) y `ui/ForcingEditor.kt` (editor de forzaje compartido por los ajustes locales y el ayudante, con `ForcingValues`).
-  **Fases 1 y 2 hechas** (Chronix como mago y como ayudante). El ayudante manda siempre el **plan completo** (seis claves) con el botón «Enviar» (nunca por tecla) y puede «Soltar el control»; su conexión solo existe con su pantalla abierta (SPEC R40-R45).
+  `ui/HelperRegistry.kt` (lista de conexiones del ayudante y reglas de la plantilla, lógica pura con tests), `ui/HelperScreen.kt` (lista de conexiones, unirse y salir), `ui/HelperSessionScreen.kt` (una conexión: estado y plantilla)
+  y `ui/ForcingEditor.kt` (editor de forzaje compartido por los ajustes locales y el ayudante, con `ForcingValues`).
+  **Fases 1 y 2 hechas** (Chronix como mago y como ayudante), sobre la librería **0.2.0** (un cliente por mago, `join` devuelve `JoinResult`, `session.leave`, plantilla editable en pausa).
+  El ayudante tiene una **lista de conexiones** (sesiones de uno o varios magos): entra en una, ve su estado y **su plantilla**, manda el **plan completo** (seis claves) con un botón («Enviar» si está activa, «Guardar plantilla» si está pausada; nunca por tecla),
+  puede «Soltar el control» y «Salir» (borra su plantilla y la quita de la lista). Su conexión solo existe con la pantalla abierta (SPEC MF11–MF18).
   Fase 3 pendiente: QR y cambiar la caducidad de una sesión.
 - Detalle y decisiones en `docs/SPEC.md` (fuente de verdad funcional).
 - **Código:** lógica pura en `shared/.../domain/Stopwatch.kt` (reloj inyectado, con tests); temas en `ui/ClockTheme.kt`;
@@ -56,8 +59,9 @@ Temporizador). En la fase 1 solo el **cronómetro** es funcional y realista; las
   (`Assets.xcassets/AppIcon-<id>`) y `ui/AppIconCatalog.kt`. Si se añade/cambia un control pulsable, marcarlo con `blocksSecret()`.
 - **Estado (fase 1):** cronómetro en 7 diseños + forzaje + ajustes secretos. Probado en el emulador Android (los 7 diseños, forzaje en Samsung y OnePlus); falta probarlo en un móvil real (vibración). iOS sin compilar aún (la háptica `UIImpactFeedbackGenerator` y los gestos son lo más arriesgado).
   Magic Friends (mago) probado en el emulador Android contra el servidor real (conectar, crear/aceptar/activar/borrar sesión, cambio remoto tras armar, sin red con la app reiniciada, interruptor apagado = 0 sockets).
-  Magic Friends (ayudante) probado en el emulador con el CLI de `magicfriends` de mago (unirse, aceptar, activar, enviar el plan completo, soltar el control, pausa, revocación, emparejamiento tras reiniciar). Falta una prueba app↔app con dos móviles.
-  iOS: lo nuevo sin compilar (Ktor Darwin de la librería `iosMain`, `rememberSoftVibrate`, `remove` de `UserDefaultsStore`); el primer Actions con la librería puede fallar en `iosMain` de la librería.
+  Magic Friends (ayudante, lista de conexiones) probado en el emulador contra el servidor real con el CLI de `magicfriends` de mago, con **dos magos**: unirse a tres sesiones, aceptar, entrar, enviar el plan completo, guardar la plantilla con la sesión pausada,
+  activarla (el ayudante lo ve en vivo y el mago recibe la plantilla), salir desde dentro y desde la lista (borra la plantilla y el mago ve «sin controlador»), conexión borrada por el mago. Falta una prueba app↔app con dos móviles reales.
+  iOS: el Actions del 2026-11-18 (fases 1 y 2, librería 0.1) compiló a la primera y el `.ipa` llevaba la URL y la `appKey`. La librería 0.2 y la lista de conexiones (código común, sin cambios de plataforma) aún no se han compilado en iOS.
 
 ## Reglas de código para que compile en iOS
 - En `commonMain`: nada de `java.*` ni `android.*`. Usar `kotlinx-datetime` (0.6.1), `kotlin.math.*` y, si hace falta aritmética

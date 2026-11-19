@@ -61,8 +61,8 @@ Bibliotecas multiplataforma (lo de `java.*` **no existe en iOS**, hay que usar e
 - `com.ionspin.kotlin:bignum:0.3.10` → `BigDecimal`/`BigInteger` en vez de `java.math`.
 - `org.jetbrains.kotlinx:kotlinx-datetime:0.6.1` → fecha/hora en vez de `java.time`.
 - `com.magicfriends:magicfriends-client` (repo hermano `../magicfriends/client`, vía `includeBuild` en `settings.gradle.kts`) → cliente de Magic Friends
-  (Ktor 3.0.3, coroutines 1.9.0, serialization-json 1.7.3 como `api`). Hace falta añadir `io.ktor:ktor-client-core:3.0.3` a `commonMain`, porque su constructor
-  expone `HttpClient` pero la librería lo declara `implementation`. En CI el repo se clona en `../magicfriends` (`ios.yml`).
+  (versión 0.2.0; Ktor 3.0.3, coroutines 1.9.0 y serialization-json 1.7.3 llegan como `api`, no hace falta declararlos). La lista de conexiones del ayudante
+  la guarda cada app (la librería usa un cliente por mago con el mismo almacén). En CI el repo se clona en `../magicfriends` (`ios.yml`).
 - Tests: `kotlin("test")` en `commonTest` (no JUnit).
 
 ---
