@@ -52,38 +52,31 @@ internal class MagicFriendsController(prefs: KeyValueStore, private val scope: C
         client.stop()
     }
 
-    /**
-     * Reconecta para que el servidor devuelva la lista de sesiones actual (y la librería reconcilie la instantánea remota).
-     * Hace falta tras **borrar** una sesión: el servidor solo envía un `ack` al mago y la librería (0.1.0) no la retira de
-     * `client.sessions` ni deja de aplicar sus ajustes hasta reconectar. Si la librería lo corrige, esto sobra pero no estorba.
-     */
-    fun refresh() {
-        client.stop()
-        client.start()
-    }
-
     /** Ajustes remotos validados, **ahora mismo** (vacíos si no hay sesión activa o ha caducado). */
     fun remoteOverrides(): RemoteOverrides = parseRemoteOverrides(client.currentRemoteSettings())
 }
 
 /**
- * Chronix como **ayudante** de Magic Friends: controla en remoto los ajustes de forzaje de otro mago. Solo existe mientras
- * la pantalla del ayudante está abierta (sin pantalla no hay red), con su propia identidad (`mf.helper.*`), distinta de la
- * del mago. No necesita la `appKey`: solo el mago la usa, para registrarse.
+ * Chronix como **ayudante** de Magic Friends: controla en remoto los ajustes de forzaje de otro mago. Hay **un cliente por mago**
+ * (la librería 0.2 lo pide así), todos con el mismo almacén, y por eso con la misma identidad (`mf.helper.*`), distinta de la del
+ * mago. No necesita la `appKey`: solo el mago la usa, para registrarse.
  *
- * Un dispositivo ayudante queda ligado a **un mago a la vez**: usar el código de otro mago cambia el emparejamiento.
+ * - Con [magoId]: cliente conectado a ese mago (para trabajar con una de sus sesiones). Solo existe mientras la pantalla de esa
+ *   conexión está abierta (sin pantalla no hay red).
+ * - Sin [magoId]: cliente que no conecta y solo sirve para canjear un código ([MagicFriendsClient.join]).
  */
-internal class MagicFriendsHelper(prefs: KeyValueStore, private val scope: CoroutineScope) {
+internal class MagicFriendsHelper(prefs: KeyValueStore, private val scope: CoroutineScope, magoId: String? = null) {
     val client = MagicFriendsClient(
         role = Role.HELPER,
         serverUrl = MagicFriendsConfig.SERVER_URL,
         store = MagicFriendsPrefs(prefs),
         scope = scope,
+        magoId = magoId,
     )
 
     private var watchdog: Job? = null
 
-    /** Conecta si ya hay un mago emparejado; si no, espera a que [MagicFriendsClient.join] lo establezca. */
+    /** Conecta con el mago indicado (la librería reintenta sola). Sin mago no hace nada. */
     fun start() {
         client.start()
         watchdog?.cancel()

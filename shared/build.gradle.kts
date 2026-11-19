@@ -26,9 +26,6 @@ kotlin {
             implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
             // Cliente de Magic Friends (includeBuild en settings.gradle.kts). Trae coroutines y serialization-json como `api`.
             implementation("com.magicfriends:magicfriends-client")
-            // El constructor del cliente expone `HttpClient` de Ktor pero la librería lo declara `implementation`: sin esto
-            // Chronix no compila. Misma versión que la librería (ktorVersion en magicfriends/client/build.gradle.kts).
-            implementation("io.ktor:ktor-client-core:3.0.3")
         }
         androidMain.dependencies {
             implementation("androidx.activity:activity-compose:1.9.3")

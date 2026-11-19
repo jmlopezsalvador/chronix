@@ -76,7 +76,7 @@ private val guidePages = listOf(
             "Un ayudante puede cambiar tus números del forzaje desde su móvil, en directo, incluso después de armarlo.",
             "Se activa en los ajustes con «Usar Magic Friends». Con el interruptor apagado, la app no usa internet.",
             "Tus ajustes nunca se pisan: con Magic Friends activado vale lo que ponga el ayudante y, en lo que no toque, lo tuyo.",
-            "Y si eres tú el ayudante de otro mago, pulsa «Soy el ayudante» en los ajustes y escribe su código.",
+            "Y si eres tú el ayudante de otros magos, pulsa «Soy el ayudante» en los ajustes: ahí queda tu lista de conexiones, cada una con su estado y su plantilla.",
         ),
     ),
     GuidePage(

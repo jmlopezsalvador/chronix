@@ -53,9 +53,10 @@ fun ChronixRoot(store: SettingsStore) {
             magic = null
         }
     }
-    // Aviso discreto (vibración suave) cuando llega un cambio del ayudante
+    // Aviso discreto (vibración suave) cuando cambia lo que va a pasar: llega un cambio del ayudante (RemotePatch) o un estado
+    // nuevo de la sesión activa (SettingsChanged: al activarla con plantilla, al resincronizar o al salirse el ayudante)
     LaunchedEffect(magic) {
-        magic?.client?.events?.collect { if (it is ClientEvent.RemotePatch) softVibrate() }
+        magic?.client?.events?.collect { if (it is ClientEvent.RemotePatch || it is ClientEvent.SettingsChanged) softVibrate() }
     }
 
     MaterialTheme {

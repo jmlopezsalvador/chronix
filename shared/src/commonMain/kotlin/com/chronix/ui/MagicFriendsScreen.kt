@@ -261,12 +261,7 @@ private fun MagicFriendsContent(controller: MagicFriendsController) {
                 TextButton(onClick = {
                     confirm = null
                     val forget: (Any?) -> Unit = { code = code?.takeIf { it.sessionId != id } }
-                    if (c.delete) {
-                        // Al borrar, el servidor solo manda un ack al mago: se reconecta para refrescar la lista y los ajustes
-                        command({ client.deleteSession(id) }) { forget(null); controller.refresh() }
-                    } else {
-                        command({ client.revokeSession(id) }, forget)
-                    }
+                    if (c.delete) command({ client.deleteSession(id) }, forget) else command({ client.revokeSession(id) }, forget)
                 }) { Text(if (c.delete) "Borrar" else "Revocar") }
             },
             dismissButton = { TextButton(onClick = { confirm = null }) { Text("Cancelar") } },
@@ -274,10 +269,10 @@ private fun MagicFriendsContent(controller: MagicFriendsController) {
     }
 }
 
-private fun Modifier.card(): Modifier =
+internal fun Modifier.card(): Modifier =
     fillMaxWidth().clip(RoundedCornerShape(12.dp)).border(1.dp, Color(0xFFDDDDE3), RoundedCornerShape(12.dp)).padding(12.dp)
 
-private fun nowMs(): Long = Clock.System.now().toEpochMilliseconds()
+internal fun nowMs(): Long = Clock.System.now().toEpochMilliseconds()
 
 private fun describeError(e: Throwable): String = when ((e as? MfException)?.code) {
     "not_connected" -> "Sin conexión con el servidor."

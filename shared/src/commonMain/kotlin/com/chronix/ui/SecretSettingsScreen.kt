@@ -160,7 +160,7 @@ fun SecretSettingsScreen(
         if (MagicFriendsConfig.helperAvailable) {
             Spacer(Modifier.height(16.dp))
             Text(
-                "Controlar a otro mago: cambias en remoto sus ajustes de forzaje con el código que él te dé. La red solo se usa mientras esa pantalla está abierta.",
+                "Controlar a otros magos: te unes con el código que te dé cada uno y trabajas con la plantilla de cada conexión. La red solo se usa al unirte, al salir de una conexión y mientras tienes una abierta.",
                 fontSize = 13.sp, color = Color.Gray,
             )
             Spacer(Modifier.height(4.dp))
